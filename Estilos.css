@@ -268,46 +268,10 @@ body {
     font-weight: bold;
 }
 
-/*.mute:hover, .solo:hover {
-    background-color: #95a5a6;
-}*/
 
-/* Estilos para selector1 y selector2 */
-#selector1, #selector2 {
-    background-color: #BDAC90;
-}
-#selector1.active, #selector2.active {
-    background-color: #F6B142;
-}
+.armonia{background-color: var(--armonia-color);}
+.melodia{background-color: var(--melodia-color);}
+.ritmo{background-color: var(--ritmo-color);}
+.fondo{background-color: var(--fondo-color);}
+.adornos{background-color: var(--adornos-color);}
 
-/* Estilos para selector3, selector4, selector5 y selector6 */
-#selector3, #selector4, #selector5, #selector6 {
-    background-color: #BC9889;
-}
-#selector3.active, #selector4.active, #selector5.active, #selector6.active {
-    background-color: #F36326;
-}
-
-/* Estilos para selector7, selector8, selector9 y selector10 */
-#selector7, #selector8, #selector9, #selector10 {
-    background-color: #99A88f;
-}
-#selector7.active, #selector8.active, #selector9.active, #selector10.active {
-    background-color: #66A13F;
-}
-
-/* Estilos para selector11 a selector18 */
-#selector11, #selector12, #selector13, #selector14, #selector15, #selector16, #selector17, #selector18 {
-    background-color: #bb8196;
-}
-#selector11.active, #selector12.active, #selector13.active, #selector14.active, #selector15.active, #selector16.active, #selector17.active, #selector18.active {
-    background-color: #EC085B;
-}
-
-/* Estilos para selector19 a selector34 */
-#selector19, #selector20, #selector21, #selector22, #selector23, #selector24, #selector25, #selector26, #selector27, #selector28, #selector29, #selector30, #selector31, #selector32, #selector33, #selector34 {
-    background-color: #A382A6;
-}
-#selector19.active, #selector20.active, #selector21.active, #selector22.active, #selector23.active, #selector24.active, #selector25.active, #selector26.active, #selector27.active, #selector28.active, #selector29.active, #selector30.active, #selector31.active, #selector32.active, #selector33.active {
-    background-color: #8D0D9C;
-}

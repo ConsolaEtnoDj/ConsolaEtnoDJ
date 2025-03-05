@@ -20,11 +20,20 @@ document.addEventListener('DOMContentLoaded', function() {
         return { source, gainNode }; // Devolvemos source y gainNode
     }
 
+    function actualizarColorBoton(button){
+        if (button.classList.contains('active')) {
+            button.style.opacity = "1"; // Opacidad completa cuando está activo
+        } else {
+            button.style.opacity = "0.5"; // Opacidad al 50% cuando está inactivo
+        }
+    }
+
     botonesAudio.forEach((button) => {
         button.dataset.active = 'false';
         const audioUrl = button.getAttribute('data-audio');
         const sectionId = button.closest('.fila').dataset.section;
         button.setAttribute('data-section', sectionId);
+        button.style.opacity = "0.5"; // Iniciar todos con opacidad al 50%
 
         cargarAudio(audioUrl).then(audioBuffer => {
             fuentesAudio[button.id] = {
@@ -48,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.classList.add('active');
                     this.dataset.active = 'true';
                 }
+                actualizarColorBoton(this); // Llamamos la función para cambiar color
             });
         });
     });
@@ -110,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Agregar funcionalidad al botón encender
+    // Funcionalidad al botón encender
     const botonEncender = document.getElementById('encender');
 
     botonEncender.addEventListener('click', function() {
@@ -121,6 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             botonEncender.classList.remove('activo');
             botonEncender.querySelector('i').style.color = 'red';
+
             // Detener todos los audios si la consola se apaga
             Object.keys(fuentesAudio).forEach(key => {
                 if (fuentesAudio[key].source) {
@@ -132,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
             botonesAudio.forEach(button => {
                 button.classList.remove('active');
                 button.dataset.active = 'false';
+                actualizarColorBoton(button);
             });
             // Desactivar todos los botones de silencio y solo
             botonesSilencio.forEach(button => {
