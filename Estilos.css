@@ -32,11 +32,13 @@ body {
     height: 80%;
     display: flex;
     flex-direction: column; 
-    background-color: #d8d8d8;
+    background-color: #F8F7F2;
     padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     gap:20px;
+    border: 2px solid;
+    border-color: #B6AC87;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);  
 }
 
 .controles { /* Seccion de control de parametros (Fila de arriba)*/
@@ -47,12 +49,11 @@ body {
     gap: 20px;
 }
 .control-panel { /* Control de parametros principal*/
-    width: 10%; /* Ancho del panel de control */
+    width: 20%; 
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    align-items: center;
-    background-color: #a6a6a6;
+    align-items: center; 
     border: 3px solid;
     border-color: #7D7D7D;
     border-radius: 12px;
