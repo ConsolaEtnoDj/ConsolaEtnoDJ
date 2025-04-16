@@ -43,22 +43,42 @@ body {
 
 .controles { /* Seccion de control de parametros (Fila de arriba)*/
     width: 100%;
-    height: 50%;
+    height: 40%;
     display: flex;
     flex-direction: row;
     gap: 20px;
 }
 .control-panel { /* Control de parametros principal*/
-    width: 20%; 
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content:space-between;
     align-items: center; 
+    padding: 10px 10px;
     border: 3px solid;
     border-color: #7D7D7D;
     border-radius: 12px;
     text-align: center;
-    padding: 10px;
+}
+.control-actuadores { /* Control de parametros principal*/
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    gap: 20px;
+    align-self: stretch;
+}
+.controles-reproduccion { /*Botones de encendido, reproducir, grabar y descargar */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+   	align-items: center;
+    gap: 10px;
+    align-self: stretch;
+}
+.controles-ajustes { /*Ajuste de tempo y volumen de la consola en general*/
+    display: flex;
+    flex-direction: column;
+   	align-items: center;
+    gap: 10px;
 }
 
 .titulo {
@@ -135,16 +155,9 @@ body {
     border-width: 1px;
 }
 
-.controles-reproduccion { /*Botones de reproducir y parar la consola en general*/
-    display: flex;
-    flex-direction: row;
-   	align-items: center;
-    gap: 10px;
-}
-
-#encender, #reiniciar {
-    width: 40px;
-    height: 40px;
+#encender, #reiniciar , #grabar, #descargar{
+    width: 45px;
+    height: 45px;
     flex: 1;  
     border: none;
     cursor: pointer;
@@ -152,6 +165,7 @@ body {
     justify-content: center;
     align-items: center;
     border-radius: 12px;
+    border: 1px solid #7F7F7F;
     background-color: #d9d9d9;
     font-size: 18px;
     font-weight: bold;
@@ -162,11 +176,28 @@ body {
 }
 
 #encender i {
-    color: red; /* Color rojo cuando está inactivo */
+    color: #E65252; /* Color rojo cuando está inactivo */
 }
 
 #encender.activo i {
     color: black; /* Color negro cuando está activo */
+}
+
+
+#grabar:active {
+    background-color: #f99;
+}
+
+#grabar i {
+    color: black; /* Color rojo cuando está inactivo */
+}
+#grabar.activo i {
+    color: #E65252; /* Color negro cuando está activo */
+}
+
+#descargar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .visualizador {
@@ -201,7 +232,7 @@ body {
 
 /* Sección de los botones para los audios*/ 
 .selectores-audios {
-    height: 50%;
+    height: 60%;
     display: flex;
     flex-direction: row;
     gap: 20px;
@@ -222,8 +253,8 @@ body {
     align-items: center;
 }
 .mute, .solo {
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     background-color: #b3b3b3;
     border-radius: 12px;
     border: none;
@@ -269,6 +300,10 @@ body {
     font-weight: bold;
 }
 
+.seccion-inactiva {
+    background-color: #d9d9d9 !important;
+    opacity: 0.6;
+}
 
 .armonia{background-color: var(--armonia-color);}
 .melodia{background-color: var(--melodia-color);}
