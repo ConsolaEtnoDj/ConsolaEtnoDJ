@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const fuentesAudio = {};
     const volumenesOriginales = {};
     let consolaEncendida = false;
+    let reproduccionActiva = false;
 
     function cargarAudio(url) {
         return fetch(url)
@@ -55,36 +56,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 gainNode: null // Inicialmente null
             };
     
-            button.addEventListener('click', function() {
-                if (!consolaEncendida) return; // Si la consola está apagada, no hacer nada
-    
-                if (this.classList.contains('active')) {
-                    this.classList.remove('active');
-                    this.dataset.active = 'false';
+            
+        button.addEventListener('click', function() {
+            if (!consolaEncendida) return;
+
+            if (this.classList.contains('active')) {
+                this.classList.remove('active');
+                this.dataset.active = 'false';
+                if (fuentesAudio[this.id].source) {
                     fuentesAudio[this.id].source.stop();
                     fuentesAudio[this.id].source = null;
-                } else {
+                }
+            } else {
+                this.classList.add('active');
+                this.dataset.active = 'true';
+
+                if (reproduccionActiva) {
                     const { source, gainNode } = reproducirAudio(fuentesAudio[this.id].buffer);
                     fuentesAudio[this.id].source = source;
                     fuentesAudio[this.id].gainNode = gainNode;
-                    this.classList.add('active');
-                    this.dataset.active = 'true';
-    
+                    gainNode.connect(contextoAudio.destination);
+                    gainNode.connect(mediaStreamDestinoGlobal);
+
                     const section = this.dataset.section;
                     const seccionId = section.replace('volumen-', '');
                     const volumenOriginal = volumenesOriginales[section] ?? 0.5;
-                    
-                    // Iniciar en silencio y luego aplicar volumen si se puede
-                    gainNode.gain.setValueAtTime(0, contextoAudio.currentTime);
 
+                    gainNode.gain.setValueAtTime(0, contextoAudio.currentTime);
                     setTimeout(() => {
                         const debeSonar = seccionDebeSonar(seccionId);
                         gainNode.gain.setValueAtTime(debeSonar ? volumenOriginal : 0, contextoAudio.currentTime);
                     }, 0);
                 }
-    
-                actualizarColorBoton(this);
-            });
+            }
+
+            actualizarColorBoton(this);
+        });
+
         });
     });
     
@@ -103,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const fuente = fuentesAudio[key];
                 if (fuente.gainNode) {
                     const seccionId = id.replace('volumen-', '');
-                    const debeSonar = seccionEdebeSonar(seccionId);
+                    const debeSonar = seccionDebeSonar(seccionId);
                     fuente.gainNode.gain.setValueAtTime(debeSonar ? gainValue : 0, contextoAudio.currentTime);
                 }
             }
@@ -178,32 +186,40 @@ document.addEventListener('DOMContentLoaded', function() {
             botonEncender.classList.remove('activo');
             botonEncender.querySelector('i').style.color = 'red';
 
-            // Detener todos los audios si la consola se apaga
-            Object.keys(fuentesAudio).forEach(key => {
-                if (fuentesAudio[key].source) {
-                    fuentesAudio[key].source.stop();
-                    fuentesAudio[key].source = null;
-                }
-            });
+            
+        // Detener todos los audios si la consola se apaga
+        Object.keys(fuentesAudio).forEach(key => {
+            if (fuentesAudio[key].source) {
+                fuentesAudio[key].source.stop();
+                fuentesAudio[key].source = null;
+            }
+        });
 
-            // Desactivar todos los botones de audio
-            botonesAudio.forEach(button => {
-                button.classList.remove('active');
-                button.dataset.active = 'false';
-                actualizarColorBoton(button);
-            });
-            // Desactivar todos los botones de silencio y solo
-            botonesSilencio.forEach(button => {
-                button.classList.remove('activo');
-                const icono = button.querySelector('i');
-                icono.classList.remove('fa-volume-xmark');
-                icono.classList.add('fa-volume-high');
-            });
-            botonesSolo.forEach(button => {
-                button.classList.remove('activo');
-            });
+        // Desactivar todos los botones de audio
+        botonesAudio.forEach(button => {
+            button.classList.remove('active');
+            button.dataset.active = 'false';
+            actualizarColorBoton(button);
+        });
 
-            // Establecer todos los controles de volumen al 50% visual y funcional
+        // Desactivar todos los botones de silencio y solo
+        botonesSilencio.forEach(button => {
+            button.classList.remove('activo');
+            const icono = button.querySelector('i');
+            icono.classList.remove('fa-volume-xmark');
+            icono.classList.add('fa-volume-high');
+        });
+        botonesSolo.forEach(button => {
+            button.classList.remove('activo');
+        });
+
+        // Reset botón de reproducción
+        reproduccionActiva = false;
+        botonReiniciar.classList.remove('activo');
+        botonReiniciar.querySelector('i').classList.remove('fa-pause');
+        botonReiniciar.querySelector('i').classList.add('fa-play');
+        
+        // Establecer todos los controles de volumen al 50% visual y funcional
             const volumenIds = [
                 'volumen-armonia',
                 'volumen-melodia',
@@ -229,6 +245,112 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+
+    
+    
+    const botonReiniciar = document.getElementById('reiniciar');
+    botonReiniciar.addEventListener('click', () => {
+        if (!consolaEncendida) return;
+
+        reproduccionActiva = !reproduccionActiva;
+
+        if (reproduccionActiva) {
+            botonReiniciar.classList.add('activo');
+            botonReiniciar.querySelector('i').classList.remove('fa-play');
+            botonReiniciar.querySelector('i').classList.add('fa-pause');
+
+            botonesAudio.forEach(button => {
+                if (button.dataset.active === 'true') {
+                    if (!fuentesAudio[button.id].source) {
+                        const { source, gainNode } = reproducirAudio(fuentesAudio[button.id].buffer);
+                        fuentesAudio[button.id].source = source;
+                        fuentesAudio[button.id].gainNode = gainNode;
+                        gainNode.connect(contextoAudio.destination);
+                        gainNode.connect(mediaStreamDestinoGlobal);
+
+                        const section = button.dataset.section;
+                        const seccionId = section.replace('volumen-', '');
+                        const volumenOriginal = volumenesOriginales[section] ?? 0.5;
+                        const debeSonar = seccionDebeSonar(seccionId);
+                        gainNode.gain.setValueAtTime(debeSonar ? volumenOriginal : 0, contextoAudio.currentTime);
+                    }
+                }
+            });
+
+        } else {
+            botonReiniciar.classList.remove('activo');
+            botonReiniciar.querySelector('i').classList.remove('fa-pause');
+            botonReiniciar.querySelector('i').classList.add('fa-play');
+
+            Object.keys(fuentesAudio).forEach(key => {
+                if (fuentesAudio[key].source) {
+                    fuentesAudio[key].source.stop();
+                    fuentesAudio[key].source = null;
+                }
+            });
+        }
+    });
+
+
     // Inicializar color del icono en rojo
     botonEncender.querySelector('i').style.color = 'red';
+
+    let mediaRecorder;
+    let grabando = false;
+    let chunks = [];
+    let grabacionBlob = null;
+
+    const botonGrabar = document.getElementById('grabar');
+    const botonDescargar = document.getElementById('descargar');
+
+    // Crear destino de grabación global
+    const mediaStreamDestinoGlobal = contextoAudio.createMediaStreamDestination();
+
+    botonGrabar.addEventListener('click', () => {
+        if (!consolaEncendida) return;
+
+        if (!grabando) {
+            chunks = [];
+            mediaRecorder = new MediaRecorder(mediaStreamDestinoGlobal.stream);
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                grabacionBlob = new Blob(chunks, { type: 'audio/webm' });
+                botonDescargar.disabled = false;
+            };
+
+            mediaRecorder.start();
+            grabando = true;
+            botonGrabar.classList.add('activo');
+            botonGrabar.querySelector('i').style.color = 'red';
+
+        } else {
+            mediaRecorder.stop();
+            grabando = false;
+            botonGrabar.classList.remove('activo');
+            botonGrabar.querySelector('i').style.color = 'black';
+        }
+    });
+
+    botonDescargar.addEventListener('click', async () => {
+        if (!grabacionBlob) {
+            alert("No hay grabación disponible para descargar.");
+            return;
+        }
+    
+        const arrayBuffer = await grabacionBlob.arrayBuffer();
+        const audioBuffer = await contextoAudio.decodeAudioData(arrayBuffer);
+        const wavBuffer = audioBufferToWav(audioBuffer);
+        const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+    
+        const url = URL.createObjectURL(wavBlob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'grabacion_etnodj.wav';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+    
 });
