@@ -207,7 +207,7 @@ body {
     justify-content: center;
     align-items: center;
     border-radius: 12px;
-    background-color: #b3b3b3;
+    border: 3px solid #B6AC87; 
 }
 
 .control-audios {
