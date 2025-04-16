@@ -12,19 +12,27 @@
         <div class="controles">
             <div class="control-panel">
                 <h2 class="titulo">Consola</h2>
-                <div class="deslizador-item">
-                    <div class="deslizador-circular" id="volumen"></div>
-                    <h3 class="etiqueta">Volumen</h3>
+                <div class="control-actuadores">
+                    <div class="controles-reproduccion">
+                        <button id="encender"><i class="fa-solid fa-power-off"></i></button>
+                        <button id="reiniciar"><i class="fa-solid fa-play"></i></button>
+                        <button id="grabar"><i class="fa-solid fa-circle"></i></button>
+                        <button id="descargar" disabled><i class="fa-solid fa-download"></i></button>
+                    </div>
+                    <div class="controles-ajustes">
+                        <div class="deslizador-item">
+                            <div class="deslizador-circular" id="volumen"></div>
+                            <h3 class="etiqueta">Volumen</h3>
+                        </div>
+                        <div class="entrada-item">
+                            <div class="tempo"><!-- área para el tempo --></div>
+                            <h3 class="etiqueta">Tempo</h3>
+                        </div>
+                    </div>   
                 </div>
-                <div class="entrada-item">
-                    <div class="tempo"><!-- área para el tempo --></div>
-                    <h3 class="etiqueta">Tempo</h3>
-                </div>
-                <div class="controles-reproduccion">
-                    <button id="encender"><i class="fa-solid fa-power-off"></i></button>
-                    <button id="reiniciar"><i class="fa-solid fa-play"></i></button>
-                </div>
+
             </div>
+            
 
             <div class="control-audios">
                 <div class="control-categoria" id="armonia">
@@ -89,19 +97,19 @@
         <div class="selectores-audios">
             <div class="silencio-solo">
                 <div class="silencio">
-                    <button class="mute" id="mute-armonia"><i class="fa-solid fa-volume-xmark"></i></button>
-                    <button class="mute" id="mute-melodia"><i class="fa-solid fa-volume-xmark"></i></button>
-                    <button class="mute" id="mute-ritmo"><i class="fa-solid fa-volume-xmark"></i></button>
-                    <button class="mute" id="mute-fondo"><i class="fa-solid fa-volume-xmark"></i></button>
-                    <button class="mute" id="mute-adornos"><i class="fa-solid fa-volume-xmark"></i></button>
+                    <button class="mute" id="mute-armonia"><i class="fa-solid fa-volume-high"></i></button>
+                    <button class="mute" id="mute-melodia"><i class="fa-solid fa-volume-high"></i></button>
+                    <button class="mute" id="mute-ritmo"><i class="fa-solid fa-volume-high"></i></button>
+                    <button class="mute" id="mute-fondo"><i class="fa-solid fa-volume-high"></i></button>
+                    <button class="mute" id="mute-adornos"><i class="fa-solid fa-volume-high"></i></button>
 
                 </div>
                 <div class="solos">
-                    <button class="solo" id="solo-armonia">S</button>
-                    <button class="solo" id="solo-melodia">S</button>
-                    <button class="solo" id="solo-ritmo">S</button>
-                    <button class="solo" id="solo-fondo">S</button>
-                    <button class="solo" id="solo-adornos">S</button>
+                    <button class="solo" id="solo-armonia"><i class="fas fa-headphones-alt"></i></button>
+                    <button class="solo" id="solo-melodia"><i class="fas fa-headphones-alt"></i></button>
+                    <button class="solo" id="solo-ritmo"><i class="fas fa-headphones-alt"></i></button>
+                    <button class="solo" id="solo-fondo"><i class="fas fa-headphones-alt"></i></button>
+                    <button class="solo" id="solo-adornos"><i class="fas fa-headphones-alt"></i></button>
 
                 </div>
             </div>

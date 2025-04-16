@@ -6,6 +6,7 @@ class DeslizadorCircular {
         this.id = options.id || '';
 
         this.inicializar();
+        this.elemento.__deslizadorCircular__ = this; // Guardar instancia en el DOM
     }
 
     inicializar() {
@@ -91,6 +92,6 @@ class DeslizadorCircular {
 document.addEventListener('DOMContentLoaded', () => {
     const deslizadores = document.querySelectorAll('.deslizador-circular');
     deslizadores.forEach(deslizador => {
-        new DeslizadorCircular(deslizador, { value: 10, id: deslizador.id });
+        new DeslizadorCircular(deslizador, { value: 50, id: deslizador.id });
     });
 });
