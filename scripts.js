@@ -343,11 +343,11 @@ document.addEventListener('DOMContentLoaded', function() {
 Fecha: ${fechaHora}
 Audios utilizados:
 
- ${audiosEnGrabacion.map((nombre, i) => `${i + 1}. ${nombre}`).join('\n')}
+${audiosEnGrabacion.map((nombre, i) => `${i + 1}. ${nombre}`).join('\n')}
         
         Total: ${audiosEnGrabacion.length} audio(s)
 
-Gracias Por usar ETNODJ!
+Gracias por usar ETNODJ!
         `;
 
         // Crear un Blob y un enlace para descargar el archivo de texto
