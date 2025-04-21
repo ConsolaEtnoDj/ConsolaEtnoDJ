@@ -51,8 +51,8 @@ body {
 .control-panel { /* Control de parametros principal*/
     display: flex;
     flex-direction: column;
-    justify-content:space-between;
     align-items: center; 
+    justify-content: flex-start;
     padding: 10px 10px;
     border: 3px solid;
     border-color: #7D7D7D;
@@ -61,10 +61,11 @@ body {
 }
 .control-actuadores { /* Control de parametros principal*/
     display: flex;
+    flex-direction: row;
     justify-content: center;
-    align-items: center; 
+    align-items: center;
     gap: 20px;
-    align-self: stretch;
+    flex: 1;
 }
 .controles-reproduccion { /*Botones de encendido, reproducir, grabar y descargar */
     display: flex;
@@ -72,7 +73,6 @@ body {
     justify-content: center;
    	align-items: center;
     gap: 10px;
-    align-self: stretch;
 }
 .controles-ajustes { /*Ajuste de tempo y volumen de la consola en general*/
     display: flex;
@@ -85,6 +85,10 @@ body {
     font-size: 100%;
     font-weight: bold;
     margin: 0px;
+    align-items: center;
+    justify-content: flex-start; /* <-- ESTO alinea arriba */
+    margin-bottom: 10px;
+
 }
 .etiqueta {
     font-size: 80%;
@@ -104,7 +108,6 @@ body {
     background-color: #d9d9d9;
     border-radius: 12px;
 }
-
 
 .deslizador-item { /* Deslizadores */
     display: flex;
@@ -155,10 +158,9 @@ body {
     border-width: 1px;
 }
 
-#encender, #reiniciar , #grabar, #descargar{
-    width: 45px;
-    height: 45px;
-    flex: 1;  
+#encender, #detener , #grabar, #descargar{
+    width: 50px;
+    height: 50px;
     border: none;
     cursor: pointer;
     display: flex;
