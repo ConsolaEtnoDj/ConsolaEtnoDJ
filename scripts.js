@@ -3,7 +3,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const contextoAudio = new (window.AudioContext || window.webkitAudioContext)();
     const fuentesAudio = {};
     const volumenesOriginales = {};
-    let consolaEncendida = false;
+    let consolaEncendida = false; // Indica si la consola esta encendida o apagada
+    let enPausa = false; // Indica si la consola esta en pausa cuando activo y en reproducción cuando no
 
     function cargarAudio(url) {
         return fetch(url)
@@ -28,21 +29,50 @@ document.addEventListener('DOMContentLoaded', function() {
         const estaEnSolo = soloBtn && soloBtn.classList.contains('activo');
         const estaMuteada = muteBtn && muteBtn.classList.contains('activo');
 
-        if (!estaMuteada) return true;
-        if (!estaMuteada && estaEnSolo) return true;
-        if (!estaMuteada && !haySoloActivo) return true
-
-        return false;
+        if (estaMuteada) {
+            return false; // Si está muteado, nunca debe sonar
+        }
+        if (haySoloActivo) {
+            return estaEnSolo; // Si hay algún solo activo, solo deben sonar los que están en solo
+        }
+        return true; // Si no hay solo activo y no está muteado, debe sonar
     }
+
+    function actualizarBotonesDeAudios() {
+        botonesAudio.forEach(button => {
+            const section = button.dataset.section;
+            if (!section) return;
+            
+            const seccionId = section.replace('volumen-', '');
+            const muteBtn = document.getElementById(`mute-${seccionId}`);
+            const soloBtn = document.getElementById(`solo-${seccionId}`);
+            const haySoloActivo = Array.from(document.querySelectorAll('.solo')).some(b => b.classList.contains('activo'));
+            const estaMuteada = muteBtn && muteBtn.classList.contains('activo');
+            const estaEnSolo = soloBtn && soloBtn.classList.contains('activo');
+    
+            let debeSonar = false;
+            if (estaMuteada) {
+                debeSonar = false;
+            } else if (haySoloActivo) {
+                debeSonar = estaEnSolo;
+            } else {
+                debeSonar = true;
+            }
+    
+            if (button.classList.contains('active') && debeSonar) {
+                button.classList.add('sonando');
+            } else {
+                button.classList.remove('sonando');
+            }
+        });
+    }    
 
     function actualizarColorBoton(button){
-        if (button.classList.contains('active')) {
-            button.style.opacity = "1"; // Opacidad completa cuando está activo
-        } else {
-            button.style.opacity = "0.5"; // Opacidad al 50% cuando está inactivo
-        }
+        // Opacidad completa cuando está activo sino 50% de opacidad
+        button.style.opacity = button.classList.contains('active') ? "1" : "0.5";
     }
 
+    // Botones selectores de audio
     botonesAudio.forEach((button) => {
         button.dataset.active = 'false';
         const audioUrl = button.getAttribute('data-audio');
@@ -63,35 +93,48 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (this.classList.contains('active')) {
                     this.classList.remove('active');
                     this.dataset.active = 'false';
-                    fuentesAudio[this.id].source.stop();
-                    fuentesAudio[this.id].source = null;
+                    if (fuentesAudio[this.id].source) {
+                        fuentesAudio[this.id].source.stop();
+                        fuentesAudio[this.id].source = null;
+                    }
                 } else {
-                    const { source, gainNode } = reproducirAudio(fuentesAudio[this.id].buffer);
+                    const section = this.dataset.section;
+                    const seccionId = section.replace('volumen-', '');
+                    const volumenOriginal = volumenesOriginales[section] ?? 0.5;
+                    const debeSonar = seccionDebeSonar(seccionId);
+
+                    const source = contextoAudio.createBufferSource();
+                    source.buffer = fuentesAudio[this.id].buffer;
+                    source.loop = true;
+
+                    const gainNode = contextoAudio.createGain();
+
+                    if (enPausa) {
+                        // Iniciar en silencio y luego aplicar volumen si se puede
+                        gainNode.gain.setValueAtTime(0, contextoAudio.currentTime);
+                    } else {
+                        gainNode.gain.setValueAtTime(debeSonar ? volumenOriginal : 0, contextoAudio.currentTime);
+                    }
+                    
+                    // Luego conectamos
+                    source.connect(gainNode).connect(contextoAudio.destination);
+                    source.start();
+
                     fuentesAudio[this.id].source = source;
                     fuentesAudio[this.id].gainNode = gainNode;
-                    gainNode.connect(contextoAudio.destination);
+                    fuentesAudio[this.id].debeSonar = debeSonar;
+
                     if (grabando) {
                         gainNode.connect(mediaStreamDestinoGlobal);
                         const nombre = this.getAttribute('data-audio').split('/').pop();
                         audiosEnGrabacion.push(nombre);
                     }
+
                     this.classList.add('active');
                     this.dataset.active = 'true';
-    
-                    const section = this.dataset.section;
-                    const seccionId = section.replace('volumen-', '');
-                    const volumenOriginal = volumenesOriginales[section] ?? 0.5;
-                    
-                    // Iniciar en silencio y luego aplicar volumen si se puede
-                    gainNode.gain.setValueAtTime(0, contextoAudio.currentTime);
-
-                    setTimeout(() => {
-                        const debeSonar = seccionDebeSonar(seccionId);
-                        gainNode.gain.setValueAtTime(debeSonar ? volumenOriginal : 0, contextoAudio.currentTime);
-                    }, 0);
-                    }
-        
+                }
                 actualizarColorBoton(this);
+                actualizarBotonesDeAudios();
             });
         });
     });
@@ -118,69 +161,50 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Función para actualizar el estado de los botones de silencio y solo
+    // Función para actualizar el estado de los audios deacuerdo a los botones de silencio y solo
     function actualizarEstadoAudio() {
-        const botonesSilencio = document.querySelectorAll('.mute');
         const botonesSolo = document.querySelectorAll('.solo');
         const seccionesActivas = Array.from(botonesSolo).filter(btn => btn.classList.contains('activo')).map(btn => btn.id.replace('solo-', ''));
+        
+        botonesAudio.forEach(button => {
+            if (!button.classList.contains('active')) return; // Solo actualizar los botones activos
 
-        botonesSilencio.forEach(btn => {
-            const sectionId = btn.id.replace('mute-', '');
-            const gainNodes = Array.from(document.querySelectorAll(`.selector[data-section="volumen-${sectionId}"]`)).map(selector => fuentesAudio[selector.id]?.gainNode);
-            const volumenOriginal = volumenesOriginales[`volumen-${sectionId}`] ?? 0.5;
+            const section = button.dataset.section;
+            const seccionId = section.replace('volumen-', '');
+            const muteBtn = document.getElementById(`mute-${seccionId}`);
+            const soloBtn = document.getElementById(`solo-${seccionId}`);
+            const estaMuteada = muteBtn && muteBtn.classList.contains('activo');
+            const estaEnSolo = soloBtn && soloBtn.classList.contains('activo');
+            const haySoloActivo = seccionesActivas.length > 0;
 
-            if (btn.classList.contains('activo')) {
-                gainNodes.forEach(gainNode => {
-                    if (gainNode) gainNode.gain.setValueAtTime(0, contextoAudio.currentTime);
-                });
-            } else if (seccionesActivas.length > 0 && !seccionesActivas.includes(sectionId)) {
-                gainNodes.forEach(gainNode => {
-                    if (gainNode) gainNode.gain.setValueAtTime(0, contextoAudio.currentTime);
-                });
-            } else {
-                gainNodes.forEach(gainNode => {
-                    if (gainNode) gainNode.gain.setValueAtTime(volumenOriginal, contextoAudio.currentTime);
-                });
+            let debeSonar = false;
+            if (estaMuteada) {
+                debeSonar = false;
+            } else if (haySoloActivo) {
+                debeSonar = estaEnSolo;
+            } else {   
+                debeSonar = true;
             }
+
+            const fuente = fuentesAudio[button.id];
+            const volumenOriginal = volumenesOriginales[section] ?? 0.5;
+
+            if (fuente && fuente.gainNode) {
+                if (!enPausa) {
+                    fuente.gainNode.gain.setValueAtTime(debeSonar ? volumenOriginal : 0, contextoAudio.currentTime);
+                } 
+            }
+            fuente.debeSonar = debeSonar; // Guardar el estado de si debe sonar o no
+           
+            actualizarColorBoton(button);
         });
+        actualizarBotonesDeAudios();
     }
-
-    // Agregar funcionalidad a los botones de silencio y solo
-    const botonesSilencio = document.querySelectorAll('.mute');
-    const botonesSolo = document.querySelectorAll('.solo');
-
-    botonesSilencio.forEach(btn => {
-        btn.addEventListener('click', function() {
-            if (!consolaEncendida) return; // Si la consola está apagada, no hacer nada
-            this.classList.toggle('activo');
-            const icono = this.querySelector('i');
-
-        if (this.classList.contains('activo')) {
-            icono.classList.remove('fa-volume-high');
-            icono.classList.add('fa-volume-xmark');
-        } else {
-            icono.classList.remove('fa-volume-xmark');
-            icono.classList.add('fa-volume-high');
-        }
-            actualizarEstadoAudio();
-        });
-    });
-
-    botonesSolo.forEach(btn => {
-        btn.addEventListener('click', function() {
-            if (!consolaEncendida) return; // Si la consola está apagada, no hacer nada
-            this.classList.toggle('activo');
-            actualizarEstadoAudio();
-        });
-    });
-
    
     const botonEncender = document.getElementById('encender');
     const botonDetener = document.getElementById('detener');
     const botonGrabar = document.getElementById('grabar');
     const botonDescargar = document.getElementById('descargar');
-
-    let enPausa = false;
     
     // Inicializar color del icono en rojo
     botonEncender.querySelector('i').style.color = 'red';
@@ -227,19 +251,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             // Establecer todos los controles de volumen al 50% visual y funcional
-            const volumenIds = [
-                'volumen-armonia',
-                'volumen-melodia',
-                'volumen-ritmo',
-                'volumen-fondo',
-                'volumen-adornos'
-            ];
-            
-            volumenIds.forEach(id => {
+            ['volumen-armonia', 'volumen-melodia', 'volumen-ritmo', 'volumen-fondo', 'volumen-adornos'].forEach(id => {
                 const evento = new CustomEvent('valuechange', {
-                    detail: {
-                        id: id,
-                        value: 50
+                    detail: {id: id, value: 50
                     }
                 });
                 document.dispatchEvent(evento);
@@ -250,6 +264,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+    });
+
+    // Botones de silencio y solo
+    const botonesSilencio = document.querySelectorAll('.mute');
+    const botonesSolo = document.querySelectorAll('.solo');
+
+    botonesSilencio.forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (!consolaEncendida) return; // Si la consola está apagada, no hacer nada
+            this.classList.toggle('activo');
+            const icono = this.querySelector('i');
+
+            if (this.classList.contains('activo')) {
+                icono.classList.remove('fa-volume-high');
+                icono.classList.add('fa-volume-xmark');
+            } else {
+                icono.classList.remove('fa-volume-xmark');
+                icono.classList.add('fa-volume-high');
+            }
+            actualizarEstadoAudio();
+        });
+    });
+
+    botonesSolo.forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (!consolaEncendida) return; // Si la consola está apagada, no hacer nada
+            this.classList.toggle('activo');
+            actualizarEstadoAudio();
+        });
     });
 
     // Inicializar el botón de grabación y descarga
@@ -365,9 +408,8 @@ Gracias por usar ETNODJ!
 
     botonDetener.addEventListener('click', () => {
         if (!consolaEncendida) return;
-    
         enPausa = !enPausa;
-    
+
         if (enPausa) {
             // Pausar todos los audios activos
             Object.keys(fuentesAudio).forEach(key => {
@@ -384,27 +426,28 @@ Gracias por usar ETNODJ!
             // Cambiar ícono a "play"
             botonDetener.querySelector('i').classList.remove('fa-pause');
             botonDetener.querySelector('i').classList.add('fa-play');
+
         } else {
             // Reanudar todos los audios que estaban activos
             botonesAudio.forEach(button => {
                 if (button.classList.contains('active')) {
-                    const buffer = fuentesAudio[button.id].buffer;
+                    const fuente = fuentesAudio[button.id];
                     const section = button.dataset.section;
-                    const seccionId = section.replace('volumen-', '');
-                    const debeSonar = seccionDebeSonar(seccionId);
-            
-                    const { source, gainNode } = reproducirAudio(buffer);
-                    fuentesAudio[button.id].source = source;
-                    fuentesAudio[button.id].gainNode = gainNode;
-            
                     const volumenOriginal = volumenesOriginales[section] ?? 0.5;
+
+                    const buffer = fuente.buffer;
+                    const { source, gainNode } = reproducirAudio(buffer);
+                    fuente.source = source;
+                    fuente.gainNode = gainNode;
+
+                    const debeSonar = fuente.debeSonar ?? true;
+
+                    gainNode.connect(contextoAudio.destination);
                     gainNode.gain.setValueAtTime(debeSonar ? volumenOriginal : 0, contextoAudio.currentTime);
-            
+
                     if (grabando) {
                         gainNode.connect(mediaStreamDestinoGlobal);
                     }
-            
-                    gainNode.connect(contextoAudio.destination);
                 }
             });
     
@@ -413,5 +456,4 @@ Gracias por usar ETNODJ!
             botonDetener.querySelector('i').classList.add('fa-pause');
         }
     });    
-    
 });
