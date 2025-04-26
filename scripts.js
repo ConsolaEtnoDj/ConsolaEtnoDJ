@@ -244,13 +244,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Desactivar todos los botones de audio
+            // Desactivar todos los botones de audio, silencio y solo
             botonesAudio.forEach(button => {
                 button.classList.remove('active','sonando');
                 button.dataset.active = 'false';
                 actualizarColorBoton(button);
             });
-            // Desactivar todos los botones de silencio y solo
             botonesSilencio.forEach(button => {
                 button.classList.remove('activo');
                 const icono = button.querySelector('i');
@@ -260,6 +259,9 @@ document.addEventListener('DOMContentLoaded', function() {
             botonesSolo.forEach(button => {
                 button.classList.remove('activo');
             });
+
+            // Bajar el volumen general al 50%
+            masterGainNode.gain.setValueAtTime(0.5, contextoAudio.currentTime);
 
             // Establecer todos los controles de volumen al 50% visual y funcional
             ['volumen-armonia', 'volumen-melodia', 'volumen-ritmo', 'volumen-fondo', 'volumen-adornos'].forEach(id => {
@@ -274,6 +276,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     deslizador.__deslizadorCircular__.dibujar();
                 }
             });
+
+            // Ectualizar el deslizador general 
+            const deslizadorGeneral = document.getElementById('volumen');
+            if (deslizadorGeneral && deslizadorGeneral.__deslizadorCircular__) {
+                deslizadorGeneral.__deslizadorCircular__.valor = 50; 
+                deslizadorGeneral.__deslizadorCircular__.dibujar();
+            }
         }
     });
 
