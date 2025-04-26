@@ -288,7 +288,6 @@ body {
     align-items: center;
     gap: 10px; /* Espacio entre elementos en la fila */
 }
-
 .selector {
     height: 100%;
     flex: 1;
@@ -300,11 +299,11 @@ body {
     color: #fff;
     font-size: 18px;
     font-weight: bold;
+    transition: box-shadow 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
 }
-
-.seccion-inactiva {
-    background-color: #d9d9d9 !important;
-    opacity: 0.6;
+.selector.sonando {
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.7);
+    transform: scale(1); /* opcional para dar un pequeño "zoom" */
 }
 
 .armonia{background-color: var(--armonia-color);}
