@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const fuentesAudio = {};
     const volumenesOriginales = {};
+    let tonosOriginales = {}; // Almacena los valores de tono (playbackRate)
     let consolaEncendida = false; // Indica si la consola esta encendida o apagada
     let enPausa = false; // Indica si la consola esta en pausa cuando activo y en reproducción cuando no
 
@@ -16,15 +17,53 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(buffer => contextoAudio.decodeAudioData(buffer));
     }
 
-    function reproducirAudio(audioBuffer) {
+    /**
+     * Inicia una fuente de audio para un botón específico.
+     * Crea el BufferSource, ajusta el volumen y el tono,
+     * y lo conecta al pipeline de audio.
+     * @param {HTMLElement} button - El botón del selector que se está activando.
+     */
+    function iniciarFuenteAudio(button) {
+        const id = button.id;
+        if (!fuentesAudio[id] || !fuentesAudio[id].buffer) return; // Chequeo de seguridad
+
+        const section = button.dataset.section;
+        const seccionIdVolumen = section;
+        const seccionIdTono = section.replace('volumen-', 'tono-');
+
+        const volumenOriginal = volumenesOriginales[seccionIdVolumen] ?? 0.5;
+        const tonoOriginal = tonosOriginales[seccionIdTono] ?? 1.0; // playbackRate, 1.0 es el tono normal
+        const debeSonar = seccionDebeSonar(section.replace('volumen-', ''));
+
+        // Crear y configurar el nodo de la fuente de audio
         const source = contextoAudio.createBufferSource();
-        source.buffer = audioBuffer;
+        source.buffer = fuentesAudio[id].buffer;
         source.loop = true;
-        const gainNode = contextoAudio.createGain(); // Control de volumen
-        source.connect(gainNode).connect(masterGainNode); // Conectar al masterGainNode 
+        source.playbackRate.value = tonoOriginal; // Aplicar el tono guardado
+
+        // Crear y configurar el nodo de ganancia (volumen)
+        const gainNode = contextoAudio.createGain();
+        if (enPausa) {
+            gainNode.gain.setValueAtTime(0, contextoAudio.currentTime);
+        } else {
+            gainNode.gain.setValueAtTime(debeSonar ? volumenOriginal : 0, contextoAudio.currentTime);
+        }
+
+        // Conectar los nodos
+        source.connect(gainNode).connect(masterGainNode);
         source.start();
-        return { source, gainNode }; // Devolvemos source y gainNode
+
+        // Almacenar nodos y estado
+        fuentesAudio[id].source = source;
+        fuentesAudio[id].gainNode = gainNode;
+        fuentesAudio[id].debeSonar = debeSonar;
+
+        // Conectar a la grabadora si está activa
+        if (grabando) {
+            gainNode.connect(mediaStreamDestinoGlobal);
+        }
     }
+
 
     function seccionDebeSonar(sectionId) {
         const muteBtn = document.getElementById(`mute-${sectionId}`);
@@ -80,6 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
     botonesAudio.forEach((button) => {
         button.dataset.active = 'false';
         const audioUrl = button.getAttribute('data-audio');
+        if (!audioUrl) return; // No cargar si no hay audio
         const sectionId = button.closest('.fila').dataset.section;
         button.setAttribute('data-section', sectionId);
         button.style.opacity = "0.5"; // Iniciar todos con opacidad al 50%
@@ -97,39 +137,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (this.classList.contains('active')) {
                     this.classList.remove('active');
                     this.dataset.active = 'false';
-                    if (fuentesAudio[this.id].source) {
+                    if (fuentesAudio[this.id] && fuentesAudio[this.id].source) {
                         fuentesAudio[this.id].source.stop();
                         fuentesAudio[this.id].source = null;
                     }
                 } else {
-                    const section = this.dataset.section;
-                    const seccionId = section.replace('volumen-', '');
-                    const volumenOriginal = volumenesOriginales[section] ?? 0.5;
-                    const debeSonar = seccionDebeSonar(seccionId);
-
-                    const source = contextoAudio.createBufferSource();
-                    source.buffer = fuentesAudio[this.id].buffer;
-                    source.loop = true;
-
-                    const gainNode = contextoAudio.createGain();
-
-                    if (enPausa) {
-                        // Iniciar en silencio y luego aplicar volumen si se puede
-                        gainNode.gain.setValueAtTime(0, contextoAudio.currentTime);
-                    } else {
-                        gainNode.gain.setValueAtTime(debeSonar ? volumenOriginal : 0, contextoAudio.currentTime);
-                    }
-                    
-                    // Luego conectamos
-                    source.connect(gainNode).connect(masterGainNode);
-                    source.start();
-
-                    fuentesAudio[this.id].source = source;
-                    fuentesAudio[this.id].gainNode = gainNode;
-                    fuentesAudio[this.id].debeSonar = debeSonar;
+                    iniciarFuenteAudio(this);
 
                     if (grabando) {
-                        gainNode.connect(mediaStreamDestinoGlobal);
                         const nombre = this.getAttribute('data-audio').split('/').pop();
                         audiosEnGrabacion.push(nombre);
                     }
@@ -140,21 +155,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 actualizarColorBoton(this);
                 actualizarBotonesDeAudios();
             });
-        });
+        }).catch(error => console.error(`Error loading audio ${audioUrl}:`, error));
     });
     
-    // Evento para ajustar el volumen basado en el deslizador
+    // Evento para ajustar el volumen y el tono basado en el deslizador
     document.addEventListener('valuechange', (event) => {
         const { id, value } = event.detail;
-        const gainValue = value / 100;
-
-        if (!isFinite(gainValue)) return; // Verificar si gainValue es finito
 
         if (id === 'volumen') { 
-            // Si es el control de volumen global
+            const gainValue = value / 100;
+            if (!isFinite(gainValue)) return;
             masterGainNode.gain.setValueAtTime(gainValue, contextoAudio.currentTime);
-        } else {
-            // Volúmenes de las secciones individuales
+        } else if (id.startsWith('volumen-')) {
+            const gainValue = value / 100;
+            if (!isFinite(gainValue)) return;
             volumenesOriginales[id] = gainValue;
 
             Object.keys(fuentesAudio).forEach(key => {
@@ -162,14 +176,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!btn) return;
                 if (btn.dataset.section === id) {
                     const fuente = fuentesAudio[key];
-                    if (fuente.gainNode) {
+                    if (fuente && fuente.gainNode) {
                         const seccionId = id.replace('volumen-', '');
                         const debeSonar = seccionDebeSonar(seccionId);
                         fuente.gainNode.gain.setValueAtTime(debeSonar ? gainValue : 0, contextoAudio.currentTime);
                     }
                 }
             });
-        }        
+        } else if (id.startsWith('tono-')) {
+            // Mapear valor del deslizador (0-100) a semitonos (-12 a +12)
+            const totalSteps = 24;
+            const semitones = Math.round((value / 100) * totalSteps) - 12;
+
+            // Calcular playbackRate desde los semitonos. La fórmula es 2^(n/12)
+            const playbackRate = Math.pow(2, semitones / 12);
+            if (!isFinite(playbackRate)) return;
+
+            tonosOriginales[id] = playbackRate;
+            const sectionId = id.replace('tono-', 'volumen-');
+
+            Object.keys(fuentesAudio).forEach(key => {
+                const btn = document.getElementById(key);
+                if (!btn) return;
+                if (btn.dataset.section === sectionId) {
+                    const fuente = fuentesAudio[key];
+                    if (fuente && fuente.source) {
+                        fuente.source.playbackRate.setValueAtTime(playbackRate, contextoAudio.currentTime);
+                    }
+                }
+            });
+             // Actualizar el visualizador de tono
+            const displayId = `valor-${id}`; // e.g., valor-tono-armonia
+            const displayElement = document.getElementById(displayId);
+            if (displayElement) {
+                let displayValue = semitones > 0 ? `+${semitones}` : `${semitones}`;
+                displayElement.textContent = displayValue;
+            }
+        }
     });
 
     // Función para actualizar el estado de los audios deacuerdo a los botones de silencio y solo
@@ -205,7 +248,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     fuente.gainNode.gain.setValueAtTime(debeSonar ? volumenOriginal : 0, contextoAudio.currentTime);
                 } 
             }
-            fuente.debeSonar = debeSonar; // Guardar el estado de si debe sonar o no
+            if (fuente) {
+                fuente.debeSonar = debeSonar; // Guardar el estado de si debe sonar o no
+            }
            
             actualizarColorBoton(button);
         });
@@ -223,66 +268,73 @@ document.addEventListener('DOMContentLoaded', function() {
     botonEncender.addEventListener('click', function() {
         consolaEncendida = !consolaEncendida;
         if (consolaEncendida) {
+            if (contextoAudio.state === 'suspended') {
+                contextoAudio.resume();
+            }
             botonEncender.classList.add('activo');
             botonEncender.querySelector('i').style.color = 'black';
             botonDetener.querySelector('i').classList.remove('fa-play');
             botonDetener.querySelector('i').classList.add('fa-pause');
-            enPausa = false; // Asegurarse que no quede en pausa
+            enPausa = false; 
 
         } else {
             botonEncender.classList.remove('activo');
             botonEncender.querySelector('i').style.color = 'red';
             botonDetener.querySelector('i').classList.remove('fa-pause');
             botonDetener.querySelector('i').classList.add('fa-play');
-            enPausa = true; // Para evitar que se puedan activar sonidos por accidente
+            enPausa = true; 
 
-            // Detener todos los audios si la consola se apaga
+            // Detener todos los audios
             Object.keys(fuentesAudio).forEach(key => {
-                if (fuentesAudio[key].source) {
+                if (fuentesAudio[key] && fuentesAudio[key].source) {
                     fuentesAudio[key].source.stop();
                     fuentesAudio[key].source = null;
                 }
             });
 
-            // Desactivar todos los botones de audio, silencio y solo
+            // Desactivar todos los botones
             botonesAudio.forEach(button => {
                 button.classList.remove('active','sonando');
                 button.dataset.active = 'false';
                 actualizarColorBoton(button);
             });
-            botonesSilencio.forEach(button => {
+            document.querySelectorAll('.mute, .solo').forEach(button => {
                 button.classList.remove('activo');
                 const icono = button.querySelector('i');
-                icono.classList.remove('fa-volume-xmark');
-                icono.classList.add('fa-volume-high');
-            });
-            botonesSolo.forEach(button => {
-                button.classList.remove('activo');
+                if (button.classList.contains('mute')){
+                    icono.classList.remove('fa-volume-xmark');
+                    icono.classList.add('fa-volume-high');
+                }
             });
 
-            // Bajar el volumen general al 50%
-            masterGainNode.gain.setValueAtTime(0.5, contextoAudio.currentTime);
-
-            // Establecer todos los controles de volumen al 50% visual y funcional
-            ['volumen-armonia', 'volumen-melodia', 'volumen-ritmo', 'volumen-fondo', 'volumen-adornos'].forEach(id => {
-                const evento = new CustomEvent('valuechange', {
-                    detail: {id: id, value: 50
-                    }
-                });
+            // Restablecer valores y deslizadores
+            ['volumen', 'volumen-armonia', 'volumen-melodia', 'volumen-ritmo', 'volumen-fondo', 'volumen-adornos'].forEach(id => {
+                 const deslizador = document.getElementById(id);
+                if (deslizador && deslizador.__deslizadorCircular__) {
+                    deslizador.__deslizadorCircular__.valor = 50;
+                    deslizador.__deslizadorCircular__.dibujar();
+                }
+                const evento = new CustomEvent('valuechange', { detail: {id: id, value: 50 } });
                 document.dispatchEvent(evento);
+            });
+            
+            ['tono-armonia', 'tono-melodia', 'tono-ritmo', 'tono-fondo', 'tono-adornos'].forEach(id => {
                 const deslizador = document.getElementById(id);
                 if (deslizador && deslizador.__deslizadorCircular__) {
                     deslizador.__deslizadorCircular__.valor = 50;
                     deslizador.__deslizadorCircular__.dibujar();
                 }
+                const evento = new CustomEvent('valuechange', { detail: {id: id, value: 50 } });
+                document.dispatchEvent(evento);
+                 // Reset visualizador de tono
+                const displayElement = document.getElementById(`valor-${id}`);
+                if (displayElement) {
+                    displayElement.textContent = '0';
+                }
             });
 
-            // Ectualizar el deslizador general 
-            const deslizadorGeneral = document.getElementById('volumen');
-            if (deslizadorGeneral && deslizadorGeneral.__deslizadorCircular__) {
-                deslizadorGeneral.__deslizadorCircular__.valor = 50; 
-                deslizadorGeneral.__deslizadorCircular__.dibujar();
-            }
+            tonosOriginales = {};
+            volumenesOriginales = {};
         }
     });
 
@@ -294,12 +346,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Pausar todos los audios activos
             Object.keys(fuentesAudio).forEach(key => {
                 const fuente = fuentesAudio[key];
-                if (fuente.source) {
+                if (fuente && fuente.source) {
                     fuente.source.stop(); // Stop actual
                     fuente.source = null;
-                }
-                if (fuente.gainNode) {
-                    fuente.gainNode.gain.setValueAtTime(0, contextoAudio.currentTime);
                 }
             });
     
@@ -311,23 +360,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Reanudar todos los audios que estaban activos
             botonesAudio.forEach(button => {
                 if (button.classList.contains('active')) {
-                    const fuente = fuentesAudio[button.id];
-                    const section = button.dataset.section;
-                    const volumenOriginal = volumenesOriginales[section] ?? 0.5;
-
-                    const buffer = fuente.buffer;
-                    const { source, gainNode } = reproducirAudio(buffer);
-                    fuente.source = source;
-                    fuente.gainNode = gainNode;
-
-                    const debeSonar = fuente.debeSonar ?? true;
-
-                    gainNode.connect(masterGainNode);
-                    gainNode.gain.setValueAtTime(debeSonar ? volumenOriginal : 0, contextoAudio.currentTime);
-
-                    if (grabando) {
-                        gainNode.connect(mediaStreamDestinoGlobal);
-                    }
+                    iniciarFuenteAudio(button);
                 }
             });
     
@@ -354,20 +387,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!grabando) {
             chunks = [];
             audiosEnGrabacion = [];
+            
+            Object.values(fuentesAudio).forEach(fuente => {
+                if (fuente.source && fuente.gainNode && fuente.debeSonar) {
+                    fuente.gainNode.connect(mediaStreamDestinoGlobal);
+                }
+            });
+            
             // Registrar todos los audios activos desde el inicio
             botonesAudio.forEach(button => {
                 if (button.classList.contains('active')) {
-                    const section = button.dataset.section;
-                    const seccionId = section.replace('volumen-', '');
-                    const debeSonar = seccionDebeSonar(seccionId);
-                    const fuente = fuentesAudio[button.id];
-
-                    if (debeSonar && fuente && fuente.gainNode) {
-                        fuente.gainNode.connect(mediaStreamDestinoGlobal);
-                    }
-
-                    // Añadir el nombre del audio a la factura
-                    const nombre = button.getAttribute('data-audio').split('/').pop();
+                     const nombre = button.getAttribute('data-audio').split('/').pop();
                     if (nombre && !audiosEnGrabacion.includes(nombre)) {
                         audiosEnGrabacion.push(nombre);
                     }
@@ -449,32 +479,22 @@ Gracias por usar ETNODJ!
     });
 
     // Botones de silencio y solo
-    const botonesSilencio = document.querySelectorAll('.mute');
-    const botonesSolo = document.querySelectorAll('.solo');
-
-    botonesSilencio.forEach(btn => {
+    document.querySelectorAll('.mute, .solo').forEach(btn => {
         btn.addEventListener('click', function() {
-            if (!consolaEncendida) return; // Si la consola está apagada, no hacer nada
+            if (!consolaEncendida) return;
             this.classList.toggle('activo');
-            const icono = this.querySelector('i');
-
-            if (this.classList.contains('activo')) {
-                icono.classList.remove('fa-volume-high');
-                icono.classList.add('fa-volume-xmark');
-            } else {
-                icono.classList.remove('fa-volume-xmark');
-                icono.classList.add('fa-volume-high');
+            
+            if (this.classList.contains('mute')) {
+                const icono = this.querySelector('i');
+                if (this.classList.contains('activo')) {
+                    icono.classList.remove('fa-volume-high');
+                    icono.classList.add('fa-volume-xmark');
+                } else {
+                    icono.classList.remove('fa-volume-xmark');
+                    icono.classList.add('fa-volume-high');
+                }
             }
             actualizarEstadoAudio();
         });
     });
-
-    botonesSolo.forEach(btn => {
-        btn.addEventListener('click', function() {
-            if (!consolaEncendida) return; // Si la consola está apagada, no hacer nada
-            this.classList.toggle('activo');
-            actualizarEstadoAudio();
-        });
-    });
-
 });

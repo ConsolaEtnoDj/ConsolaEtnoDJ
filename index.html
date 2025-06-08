@@ -33,13 +33,15 @@
 
             </div>
             
-
             <div class="control-audios">
                 <div class="control-categoria" id="armonia">
                     <h2 class="titulo">Armonía</h2>
                     <div class="deslizador-item">
                         <div class="deslizador-circular" id="tono-armonia"></div>
-                        <h3 class="etiqueta">Tono</h3>
+                        <div class="etiqueta-compuesta">
+                            <h3 class="etiqueta">Tono</h3>
+                            <span class="visualizador-tono" id="valor-tono-armonia">0</span>
+                        </div>
                     </div>
                     <div class="deslizador-item">
                         <div class="deslizador-circular" id="volumen-armonia"></div>
@@ -50,7 +52,10 @@
                     <h2 class="titulo">Melodía</h2>
                     <div class="deslizador-item">
                         <div class="deslizador-circular" id="tono-melodia"></div>
-                        <h3 class="etiqueta">Tono</h3>
+                        <div class="etiqueta-compuesta">
+                            <h3 class="etiqueta">Tono</h3>
+                            <span class="visualizador-tono" id="valor-tono-melodia">0</span>
+                        </div>
                     </div>
                     <div class="deslizador-item">
                         <div class="deslizador-circular" id="volumen-melodia"></div>
@@ -61,7 +66,10 @@
                     <h2 class="titulo">Ritmo</h2>
                     <div class="deslizador-item" >
                         <div class="deslizador-circular" id="tono-ritmo"></div>
-                        <h3 class="etiqueta">Tono</h3>
+                         <div class="etiqueta-compuesta">
+                            <h3 class="etiqueta">Tono</h3>
+                            <span class="visualizador-tono" id="valor-tono-ritmo">0</span>
+                        </div>
                     </div>
                     <div class="deslizador-item">
                         <div class="deslizador-circular" id="volumen-ritmo"></div>
@@ -72,7 +80,10 @@
                     <h2 class="titulo">Fondo</h2>
                     <div class="deslizador-item">
                         <div class="deslizador-circular" id="tono-fondo"></div>
-                        <h3 class="etiqueta">Tono</h3>
+                        <div class="etiqueta-compuesta">
+                            <h3 class="etiqueta">Tono</h3>
+                            <span class="visualizador-tono" id="valor-tono-fondo">0</span>
+                        </div>
                     </div>
                     <div class="deslizador-item">
                         <div class="deslizador-circular" id="volumen-fondo"></div>
@@ -83,7 +94,10 @@
                     <h2 class="titulo">Adornos</h2>
                     <div class="deslizador-item">
                         <div class="deslizador-circular" id="tono-adornos"></div>
-                        <h3 class="etiqueta">Tono</h3>
+                        <div class="etiqueta-compuesta">
+                            <h3 class="etiqueta">Tono</h3>
+                            <span class="visualizador-tono" id="valor-tono-adornos">0</span>
+                        </div>
                     </div>
                     <div class="deslizador-item">
                         <div class="deslizador-circular" id="volumen-adornos"></div>
@@ -163,6 +177,7 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/audiobuffer-to-wav@1.0.0/index.min.js"></script>
     <script src="scripts.js"></script>
     <script src="deslizador-circular.js"></script>
