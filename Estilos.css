@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inria+Sans:wght@400;700&family=Josefin+Sans:wght@400;600&display=swap');
-
 :root {
     --color-seccion:  black;
     --color-seccion-rgb: 0, 0, 0;
@@ -20,6 +18,11 @@
     --control-inactivo: #d9d9d9;
 }
 
+/* --- box-sizing para un layout más predecible --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 #armonia {--color-seccion: var(--armonia-color); --color-seccion-clara: #FFBA91; --color-seccion-rgb: var(--armonia-color-rgb); }
 #melodia {--color-seccion: var(--melodia-color); --color-seccion-clara: #FFE690; --color-seccion-rgb: var(--melodia-color-rgb); }
 #ritmo {--color-seccion: var(--ritmo-color); --color-seccion-clara: #FF9F90; --color-seccion-rgb: var(--ritmo-color-rgb); }
@@ -31,13 +34,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
     background-color: #f0f0f0;
 }
 
 .consola {
-    width: 90vw;
+    width: 100%;
+    max-width: 1500px; 
     height: 90vh;
     display: flex;
     flex-direction: column;
@@ -51,7 +55,7 @@ body {
 
 .controles-superiores {
     width: 100%;
-    height: 40%;
+    min-height: 40%;
     display: flex;
     flex-direction: row;
     gap: 20px;
@@ -74,6 +78,7 @@ body {
     flex: 1;
     padding: 0px 10px;
     flex-direction: row;
+    flex-wrap: wrap; 
     align-items: center;
     justify-content: center;
     gap: 20px;
@@ -89,14 +94,15 @@ body {
 }
 
 .titulo {
-    font-size: 100%;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem); 
     font-weight: bold;
     margin: 0;
     margin-bottom: 10px;
+    word-break: break-word; 
 }
 
 .etiqueta {
-    font-size: 80%;
+    font-size: clamp(0.75rem, 2vw, 0.9rem); 
     font-weight: normal;
 }
 
@@ -129,29 +135,28 @@ body {
 .control-audios {
     height: 100%;
     display: flex;
-    flex: 1;
-    gap: 20px;
-    align-self: stretch;
+    gap: 10px;
+    align-content: flex-start;
+    justify-content: center;
 }
 
 .control-categoria {
+    height: 100%;
     display: flex;
     padding: 10px;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between; 
     align-items: center;
-    gap: 10px;
-    align-self: stretch;
-    width: 20%;
     border: 3px solid var(--color-seccion);
     border-radius: 12px;
     text-align: center;
 }
 
 .botones-categoria {
+    margin-top: auto;
     display: flex;
     flex-direction: row;
-    gap: 10px;
+    gap: 5px; 
     width: 100%;
     justify-content: center;
 }
@@ -210,34 +215,39 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 15px; /* Adjusted gap */
-    flex: 1; /* Allow vertical growth */
-    width: 100%;
+    gap: 10px;
+    flex-grow: 1;
 }
 
 .deslizador-vertical-contenedor {
-    flex: 1; /* Allow container to take up vertical space */
-    width: 100%;
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 80px;
+    width: 10vh;
+
 }
 
 .deslizador-vertical {
     -webkit-appearance: none;
     appearance: none;
-    background: #d3d3d3;
+    background: linear-gradient(to right,
+        rgba(var(--color-seccion-rgb), 0.5) 0%,
+        rgba(var(--color-seccion-rgb), 0.5) var(--fill-percentage, 50%),
+        transparent var(--fill-percentage, 50%),
+        transparent 100%
+    );
     outline: none;
-    opacity: 0.7;
+    opacity: 0.9;
     transition: opacity .2s;
     cursor: pointer;
-
-    /* Rotated slider dimensions */
-    height: 8px; /* This is the thickness of the slider track */
-    width: 100%; /* The length of the slider will be 100% of the container's height */
-    
+    border: 2px solid var(--color-seccion);
+    border-radius: 6px; 
     transform-origin: center center;
     transform: rotate(-90deg);
+    height: 10px; 
+    width: 400px ;
 }
 
 .deslizador-vertical:hover {
@@ -247,8 +257,8 @@ body {
 .deslizador-vertical::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 10px; /* This dimension is perpendicular to the track */
-    height: 30px; /* This dimension is along the track */
+    width: 10px;
+    height: 30px;
     border-radius: 12%;
     background: var(--color-seccion);
     cursor: pointer;
@@ -288,31 +298,69 @@ body {
 #descargar:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .visualizador {
-    height: 100%;
     flex: 1;
+    height: 100%;
     display: flex;
-    justify-content: center;
-    align-items: center;
     border-radius: 12px;
     border: 3px solid var(--consola-borde);
-    min-width: 0;
+    min-width: 150px;
+    /* --- INICIO: Estilos actualizados para el visualizador --- */
+    flex-direction: column;
+    align-items: stretch; /* Estira los items para que ocupen todo el ancho */
+    justify-content: flex-start; /* Alinea la lista al principio */
+    padding: 10px;
+    gap: 8px;
+    overflow-y: auto;
+    background-color: rgba(0,0,0,0.02); /* Un fondo muy sutil */
+    /* --- FIN: Estilos actualizados --- */
 }
 
+/* --- INICIO: Estilos para la lista de audios en el visualizador --- */
+.visualizador-item {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+    flex-shrink: 0; /* Evita que los items se encojan */
+}
+
+.visualizador-item.armonia { background-color: var(--armonia-color); }
+.visualizador-item.melodia { background-color: var(--melodia-color); }
+.visualizador-item.ritmo { background-color: var(--ritmo-color); }
+.visualizador-item.fondo { background-color: var(--fondo-color); }
+.visualizador-item.adornos { background-color: var(--adornos-color); }
+
+.visualizador-placeholder {
+    margin: auto;
+    color: #999;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+/* --- FIN: Estilos para la lista --- */
+
+
 .selectores-audios {
-    height: 60%;
+    height: 100%;
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    overflow-y: auto;
+    width: 100%;
+    gap: 5px;
+    padding: 5px;
+    border-radius: 12px;
 }
 
 .mute, .solo {
-    width: 40px;
-    height: 40px;
+    width: 35px;
+    height: 35px;
     border-radius: 8px;
     border: 2px solid var(--color-seccion);
     cursor: pointer;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 14px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -327,26 +375,20 @@ body {
     border-color: transparent;
 }
 
-.audios {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
 .fila {
-    height: 100%;
+    flex:1;
+    min-height: 35px;
     display: flex;
-    justify-content: flex-start;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
 }
 
 .selector {
     height: 100%;
-    flex: 1;
+    flex: 1 1 40px;
     min-width: 40px;
+    min-height: 30px;
     border-radius: 12px;
     border: none;
     cursor: pointer;
@@ -371,3 +413,25 @@ body {
 .ritmo{background-color: var(--ritmo-color);}
 .fondo{background-color: var(--fondo-color);}
 .adornos{background-color: var(--adornos-color);}
+
+
+#audio-tooltip {
+    position: fixed;
+    background-color: #333;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 5px;
+    z-index: 9999; 
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: translate(-50%, -50%);
+    white-space: nowrap; 
+}
+
+#audio-tooltip.visible {
+    opacity: 1;
+    visibility: visible;
+}
+

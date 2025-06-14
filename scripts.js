@@ -1,13 +1,62 @@
 document.addEventListener('DOMContentLoaded', function() {
+    const tooltip = document.createElement('div');
+    tooltip.id = 'audio-tooltip';
+    document.body.appendChild(tooltip);
+
     const botonesAudio = document.querySelectorAll('.selector');
     const contextoAudio = new (window.AudioContext || window.webkitAudioContext)();
     const masterGainNode = contextoAudio.createGain();
     masterGainNode.connect(contextoAudio.destination);
+    
+    const visualizador = document.querySelector('.visualizador');
 
     const fuentesAudio = {};
     const volumenesOriginales = {};
     let consolaEncendida = false;
     let enPausa = false;
+
+    function actualizarVisualizador() {
+        while (visualizador.firstChild) {
+            visualizador.removeChild(visualizador.firstChild);
+        }
+
+        const audiosSeleccionados = document.querySelectorAll('.selector.active');
+        
+        if (audiosSeleccionados.length === 0) {
+            const img = document.createElement('img');
+            img.src = '/Imagenes/etno-dj.png';
+            img.alt = 'Visualizador EtnoDJ';
+            img.style.maxWidth = '80%';
+            img.style.maxHeight = '80%';
+            img.style.borderRadius = '12px';
+            img.style.margin = 'auto';
+            visualizador.appendChild(img);
+            return;
+        }
+
+        const categorias = ['armonia', 'melodia', 'ritmo', 'fondo', 'adornos'];
+        audiosSeleccionados.forEach(boton => {
+            const nombreAudio = boton.getAttribute('data-tooltip');
+            if (nombreAudio) {
+                const itemAudio = document.createElement('div');
+                itemAudio.className = 'visualizador-item';
+                itemAudio.textContent = nombreAudio;
+                
+                let categoriaEncontrada = '';
+                for (const cat of categorias) {
+                    if (boton.classList.contains(cat)) {
+                        categoriaEncontrada = cat;
+                        break;
+                    }
+                }
+                if (categoriaEncontrada) {
+                    itemAudio.classList.add(categoriaEncontrada);
+                }
+
+                visualizador.appendChild(itemAudio);
+            }
+        });
+    }
 
     function cargarAudio(url) {
         if (!url) return Promise.resolve(null);
@@ -36,7 +85,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const haySoloActivo = Array.from(document.querySelectorAll('.solo')).some(b => b.classList.contains('activo'));
         const estaEnSolo = soloBtn && soloBtn.classList.contains('activo');
         const estaMuteada = muteBtn && muteBtn.classList.contains('activo');
-
         if (estaMuteada) return false;
         if (haySoloActivo) return estaEnSolo;
         return true;
@@ -52,42 +100,60 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function actualizarColorBoton(button) {
-        button.classList.toggle('active', button.dataset.active === 'true');
-    }
-
     botonesAudio.forEach((button) => {
         button.dataset.active = 'false';
         const audioUrl = button.getAttribute('data-audio');
         const sectionId = button.closest('.fila').dataset.section;
         button.setAttribute('data-section', sectionId);
+        
+        if (audioUrl) {
+            const nombreArchivo = audioUrl.split('/').pop().replace(/\.[^/.]+$/, "").replace(/_/g, ' '); 
+            const nombreFormateado = nombreArchivo.charAt(0).toUpperCase() + nombreArchivo.slice(1);
+            button.setAttribute('data-tooltip', nombreFormateado);
+        }
+
+        button.addEventListener('mouseenter', () => {
+            if (!consolaEncendida) return;
+            const tooltipText = button.getAttribute('data-tooltip');
+            if (tooltipText) {
+                tooltip.textContent = tooltipText;
+                tooltip.classList.add('visible');
+                const btnRect = button.getBoundingClientRect();
+                const left = btnRect.left + (btnRect.width / 2);
+                const top = btnRect.top + (btnRect.height / 2);
+                tooltip.style.left = `${left}px`;
+                tooltip.style.top = `${top}px`;
+            }
+        });
+
+        button.addEventListener('mouseleave', () => {
+            tooltip.classList.remove('visible');
+        });
 
         cargarAudio(audioUrl).then(audioBuffer => {
             if (!audioBuffer) return;
             fuentesAudio[button.id] = { buffer: audioBuffer, source: null, gainNode: null };
 
+            // CORRECCIÓN: Se reestructura el manejador de clic para mayor robustez.
             button.addEventListener('click', function() {
                 if (!consolaEncendida) return;
 
-                const isActive = this.classList.toggle('active');
-                this.dataset.active = isActive;
+                // 1. Alterna el estado visual del botón.
+                this.classList.toggle('active');
+                
+                // 2. Actualiza la lista del visualizador inmediatamente.
+                actualizarVisualizador();
+                
+                const isActive = this.classList.contains('active');
 
+                // 3. Maneja la lógica de audio.
                 if (isActive) {
-                    const section = this.dataset.section;
-                    const seccionId = section.replace('volumen-', '');
-                    const volumenOriginal = volumenesOriginales[section] ?? 0.5;
-                    const debeSonar = seccionDebeSonar(seccionId);
-
                     const { source, gainNode } = reproducirAudio(fuentesAudio[this.id].buffer);
                     fuentesAudio[this.id] = { ...fuentesAudio[this.id], source, gainNode };
-                    
+                    const seccionId = this.dataset.section.replace('volumen-', '');
+                    const volumenOriginal = volumenesOriginales[this.dataset.section] ?? 0.5;
+                    const debeSonar = seccionDebeSonar(seccionId);
                     gainNode.gain.setValueAtTime(debeSonar && !enPausa ? volumenOriginal : 0, contextoAudio.currentTime);
-                    
-                    if (grabando) {
-                        gainNode.connect(mediaStreamDestinoGlobal);
-                        const nombre = this.getAttribute('data-audio').split('/').pop();
-                        audiosEnGrabacion.push(nombre);
-                    }
                 } else {
                     if (fuentesAudio[this.id].source) {
                         fuentesAudio[this.id].source.stop();
@@ -95,10 +161,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         fuentesAudio[this.id].gainNode = null;
                     }
                 }
+
+                // 4. Actualiza el estado 'sonando' de todos los botones.
                 actualizarBotonesDeAudios();
             });
         });
     });
+    
+    actualizarVisualizador();
 
     document.addEventListener('valuechange', (event) => {
         const { id, value } = event.detail;
@@ -108,17 +178,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.querySelectorAll('.deslizador-vertical').forEach(slider => {
+        const initialPercentage = slider.value;
+        slider.style.setProperty('--fill-percentage', `${initialPercentage}%`);
         slider.addEventListener('input', (event) => {
             const id = event.target.id;
             const value = parseFloat(event.target.value);
             const gainValue = value / 100;
-
+            event.target.style.setProperty('--fill-percentage', `${value}%`);
             if (!isFinite(gainValue)) return;
             volumenesOriginales[id] = gainValue;
             Object.keys(fuentesAudio).forEach(key => {
                 const btn = document.getElementById(key);
                 if (!btn || btn.dataset.section !== id) return;
-                
                 const fuente = fuentesAudio[key];
                 if (fuente.gainNode) {
                     const seccionId = id.replace('volumen-', '');
@@ -136,8 +207,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const fuente = fuentesAudio[key];
             const btn = document.getElementById(key);
             if(fuente.gainNode && btn){
-                 const sectionId = btn.dataset.section.replace('volumen-', '');
-                 const debeSonar = seccionDebeSonar(sectionId);
+                 const seccionId = btn.dataset.section.replace('volumen-', '');
+                 const debeSonar = seccionDebeSonar(seccionId);
                  const gainValue = volumenesOriginales[btn.dataset.section] ?? 0.5;
                  if(!enPausa){
                     fuente.gainNode.gain.setValueAtTime(debeSonar ? gainValue : 0, contextoAudio.currentTime);
@@ -166,16 +237,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
              document.querySelectorAll('.selector, .mute, .solo').forEach(b => b.classList.remove('active', 'sonando', 'activo'));
-             document.querySelectorAll('.deslizador-vertical').forEach(s => s.value = 50);
+             document.querySelectorAll('.deslizador-vertical').forEach(s => {
+                s.value = 50;
+                s.style.setProperty('--fill-percentage', '50%');
+             });
              const volGeneral = document.getElementById('volumen').__deslizadorCircular__;
              if(volGeneral) {
-                volGeneral.valor = 100;
+                volGeneral.valor = 50;
                 volGeneral.dibujar();
                 volGeneral.emitirCambioValor();
              }
         }
         botonDetener.querySelector('i').className = `fa-solid ${consolaEncendida && !enPausa ? 'fa-pause' : 'fa-play'}`;
         actualizarBotonesDeAudios();
+        actualizarVisualizador();
     });
 
     botonDetener.addEventListener('click', () => {
@@ -194,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
         actualizarBotonesDeAudios();
     });
 
-    let mediaRecorder, grabando = false, chunks = [], audiosEnGrabacion = [], grabacionBlob = null;
+    let mediaRecorder, grabando = false, chunks = [], grabacionBlob = null;
     const mediaStreamDestinoGlobal = contextoAudio.createMediaStreamDestination();
 
     botonGrabar.addEventListener('click', () => {
@@ -203,9 +278,10 @@ document.addEventListener('DOMContentLoaded', function() {
         botonGrabar.classList.toggle('activo', grabando);
         if (grabando) {
             chunks = [];
-            audiosEnGrabacion = [];
             Object.values(fuentesAudio).forEach(fuente => {
-                if (fuente.gainNode) fuente.gainNode.connect(mediaStreamDestinoGlobal);
+                if (fuente.gainNode && fuente.source) {
+                     fuente.gainNode.connect(mediaStreamDestinoGlobal);
+                }
             });
             mediaRecorder = new MediaRecorder(mediaStreamDestinoGlobal.stream);
             mediaRecorder.ondataavailable = e => chunks.push(e.data);
@@ -243,4 +319,5 @@ document.addEventListener('DOMContentLoaded', function() {
             actualizarEstadoAudio();
         });
     });
+
 });
