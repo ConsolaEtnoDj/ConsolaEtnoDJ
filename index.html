@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="consola">
-        <div class="controles">
+        <div class="controles-superiores">
             <div class="control-panel">
                 <h2 class="titulo">Consola</h2>
                 <div class="control-actuadores">
@@ -19,120 +19,111 @@
                         <button id="grabar"><i class="fa-solid fa-circle"></i></button>
                         <button id="descargar" disabled><i class="fa-solid fa-download"></i></button>
                     </div>
-                    <div class="controles-ajustes">
+                    <div class="entrada-item">
                         <div class="deslizador-item">
                             <div class="deslizador-circular" id="volumen"></div>
                             <h3 class="etiqueta">Volumen</h3>
                         </div>
-                        <div class="entrada-item">
-                            <div class="tempo"><!-- área para el tempo --></div>
-                            <h3 class="etiqueta">Tempo</h3>
-                        </div>
-                    </div>   
+                         <div class="tempo-display">
+                            <span>120</span>
+                            <div class="tempo-circle"></div>
+                         </div>
+                        <h3 class="etiqueta">Tempo</h3>
+                    </div>
                 </div>
-
             </div>
-            
 
             <div class="control-audios">
                 <div class="control-categoria" id="armonia">
                     <h2 class="titulo">Armonía</h2>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="tono-armonia"></div>
-                        <h3 class="etiqueta">Tono</h3>
-                    </div>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="volumen-armonia"></div>
+                    <div class="deslizador-item-vertical">
+                        <div class="deslizador-vertical-contenedor">
+                            <input type="range" min="0" max="100" value="50" class="deslizador-vertical" id="volumen-armonia">
+                        </div>
                         <h3 class="etiqueta">Volumen</h3>
+                    </div>
+                    <div class="botones-categoria">
+                        <button class="mute" id="mute-armonia"><i class="fa-solid fa-volume-high"></i></button>
+                        <button class="solo" id="solo-armonia">S</button>
                     </div>
                 </div>
                 <div class="control-categoria" id="melodia">
                     <h2 class="titulo">Melodía</h2>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="tono-melodia"></div>
-                        <h3 class="etiqueta">Tono</h3>
-                    </div>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="volumen-melodia"></div>
+                    <div class="deslizador-item-vertical">
+                         <div class="deslizador-vertical-contenedor">
+                            <input type="range" min="0" max="100" value="50" class="deslizador-vertical" id="volumen-melodia">
+                        </div>
                         <h3 class="etiqueta">Volumen</h3>
+                    </div>
+                     <div class="botones-categoria">
+                        <button class="mute" id="mute-melodia"><i class="fa-solid fa-volume-high"></i></button>
+                        <button class="solo" id="solo-melodia">S</button>
                     </div>
                 </div>
                 <div class="control-categoria" id="ritmo">
                     <h2 class="titulo">Ritmo</h2>
-                    <div class="deslizador-item" >
-                        <div class="deslizador-circular" id="tono-ritmo"></div>
-                        <h3 class="etiqueta">Tono</h3>
-                    </div>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="volumen-ritmo"></div>
+                    <div class="deslizador-item-vertical" >
+                        <div class="deslizador-vertical-contenedor">
+                            <input type="range" min="0" max="100" value="50" class="deslizador-vertical" id="volumen-ritmo">
+                        </div>
                         <h3 class="etiqueta">Volumen</h3>
+                    </div>
+                     <div class="botones-categoria">
+                        <button class="mute" id="mute-ritmo"><i class="fa-solid fa-volume-high"></i></button>
+                        <button class="solo" id="solo-ritmo">S</button>
                     </div>
                 </div>
                 <div class="control-categoria" id="fondo">
                     <h2 class="titulo">Fondo</h2>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="tono-fondo"></div>
-                        <h3 class="etiqueta">Tono</h3>
-                    </div>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="volumen-fondo"></div>
+                    <div class="deslizador-item-vertical">
+                        <div class="deslizador-vertical-contenedor">
+                            <input type="range" min="0" max="100" value="50" class="deslizador-vertical" id="volumen-fondo">
+                        </div>
                         <h3 class="etiqueta">Volumen</h3>
+                    </div>
+                     <div class="botones-categoria">
+                        <button class="mute" id="mute-fondo"><i class="fa-solid fa-volume-high"></i></button>
+                        <button class="solo" id="solo-fondo">S</button>
                     </div>
                 </div>
                 <div class="control-categoria" id="adornos">
                     <h2 class="titulo">Adornos</h2>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="tono-adornos"></div>
-                        <h3 class="etiqueta">Tono</h3>
-                    </div>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="volumen-adornos"></div>
+                    <div class="deslizador-item-vertical">
+                        <div class="deslizador-vertical-contenedor">
+                            <input type="range" min="0" max="100" value="50" class="deslizador-vertical" id="volumen-adornos">
+                        </div>
                         <h3 class="etiqueta">Volumen</h3>
+                    </div>
+                     <div class="botones-categoria">
+                        <button class="mute" id="mute-adornos"><i class="fa-solid fa-volume-high"></i></button>
+                        <button class="solo" id="solo-adornos">S</button>
                     </div>
                 </div>
             </div>
-            <div class="visualizador">
-                <img src="Imagenes/etno-dj.png" alt="Visualizador EtnoDJ" style="max-width: 100%; max-height: 100%; border-radius: 12px;">
-            </div>            
+             <div class="visualizador">
+                <img src="/Imagenes/etno-dj.png" alt="Visualizador EtnoDJ" style="max-width: 80%; max-height: 80%; border-radius: 12px;">
+            </div>
         </div>
 
         <div class="selectores-audios">
-            <div class="silencio-solo">
-                <div class="silencio">
-                    <button class="mute" id="mute-armonia"><i class="fa-solid fa-volume-high"></i></button>
-                    <button class="mute" id="mute-melodia"><i class="fa-solid fa-volume-high"></i></button>
-                    <button class="mute" id="mute-ritmo"><i class="fa-solid fa-volume-high"></i></button>
-                    <button class="mute" id="mute-fondo"><i class="fa-solid fa-volume-high"></i></button>
-                    <button class="mute" id="mute-adornos"><i class="fa-solid fa-volume-high"></i></button>
-
-                </div>
-                <div class="solos">
-                    <button class="solo" id="solo-armonia"><i class="fas fa-headphones-alt"></i></button>
-                    <button class="solo" id="solo-melodia"><i class="fas fa-headphones-alt"></i></button>
-                    <button class="solo" id="solo-ritmo"><i class="fas fa-headphones-alt"></i></button>
-                    <button class="solo" id="solo-fondo"><i class="fas fa-headphones-alt"></i></button>
-                    <button class="solo" id="solo-adornos"><i class="fas fa-headphones-alt"></i></button>
-
-                </div>
-            </div>
             <div class="audios">
-                <div class="fila" data-section="volumen-armonia"> <!-- Armonía -->
+                <div class="fila" data-section="volumen-armonia">
                     <button class="selector armonia" id="selector1" data-audio="Audios/canto-maguaré.mp3"></button>
                     <button class="selector armonia" id="selector2"  data-audio=""></button>
                 </div>
-                <div class="fila" data-section="volumen-melodia"><!-- Melodía -->
+                <div class="fila" data-section="volumen-melodia">
                     <button class="selector melodia" id="selector3" data-audio="Audios/canto-a-yoi.mp3"></button>
                     <button class="selector melodia" id="selector4" data-audio="Audios/musica_pueblo_arhuaco.mp3"></button>
                     <button class="selector melodia" id="selector5" data-audio="Audios/pasillo_transmilenio.mp3"></button>
                     <button class="selector melodia" id="selector6" data-audio="Audios/musica_joropo_arpa.mp3"></button>
                 </div>
-                <div class="fila" data-section="volumen-ritmo"><!-- Ritmo -->
+                <div class="fila" data-section="volumen-ritmo">
                     <button class="selector ritmo" id="selector7" data-audio="Audios/porro-tambor-alegre.mp3"></button>
                     <button class="selector ritmo" id="selector8" data-audio="Audios/secar-cacao.mp3"></button>
                     <button class="selector ritmo" id="selector9" data-audio="Audios/marimba-2.mp3"></button>
                     <button class="selector ritmo" id="selector10" data-audio="Audios/cacerolazo.mp3"></button>
                 </div>
-                <div class="fila" data-section="volumen-fondo"><!-- Fondo -->
+                <div class="fila" data-section="volumen-fondo">
                     <button class="selector fondo" id="selector11" data-audio="Audios/llovizna-noche-selva.mp3"></button>
                     <button class="selector fondo" id="selector12" data-audio="Audios/rio-loretoyacu.mp3"></button>
                     <button class="selector fondo" id="selector13" data-audio="Audios/gol-del-junior.mp3"></button>
@@ -142,7 +133,7 @@
                     <button class="selector fondo" id="selector17" data-audio="Audios/peque-peque.mp3"></button>
                     <button class="selector fondo" id="selector18" data-audio=""></button>
                 </div>
-                <div class="fila" data-section="volumen-adornos"><!-- Adornos -->
+                <div class="fila" data-section="volumen-adornos">
                     <button class="selector adornos" id="selector19" data-audio="Audios/me-falta-mi-gente.mp3"></button>
                     <button class="selector adornos" id="selector20" data-audio="Audios/meneando-mijo.mp3"></button>
                     <button class="selector adornos" id="selector21" data-audio="Audios/panochas.mp3"></button>
@@ -164,7 +155,7 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/audiobuffer-to-wav@1.0.0/index.min.js"></script>
-    <script src="scripts.js"></script>
     <script src="deslizador-circular.js"></script>
+    <script src="scripts.js"></script>
 </body>
 </html>
