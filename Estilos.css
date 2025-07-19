@@ -12,9 +12,9 @@
     --fondo-color-rgb: 31, 98, 114;
     --adornos-color: #6CA353;
     --adornos-color-rgb: 108, 163, 83;
-    --consola-borde: #B6AC87;
-    --consola-fondo: #F8F7F2;
-    --control-panel-borde: #B6AC87;
+    --consola-borde: #666666;
+    --consola-fondo: #F3F3F3;
+    --control-panel-borde: #666666;
     --control-inactivo: #d9d9d9;
 }
 
@@ -36,13 +36,14 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    background-color: #f0f0f0;
+    background-color: #ffffff;
 }
 
 .consola {
-    width: 100%;
-    max-width: 1500px; 
+    width: 80%;
+    max-width: 1500px;
     height: 90vh;
+    min-height: 650px;
     display: flex;
     flex-direction: column;
     background-color: var(--consola-fondo);
@@ -59,6 +60,7 @@ body {
     display: flex;
     flex-direction: row;
     gap: 20px;
+    flex-wrap: wrap;
 }
 
 .control-panel {
@@ -73,43 +75,17 @@ body {
     text-align: center;
 }
 
-.control-actuadores {
-    display: flex;
-    flex: 1;
-    padding: 0px 10px;
-    flex-direction: row;
-    flex-wrap: wrap; 
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    align-self: stretch;
-}
-
-.controles-reproduccion {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-}
-
 .titulo {
-    font-size: clamp(0.9rem, 2.5vw, 1.1rem); 
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
     font-weight: bold;
     margin: 0;
     margin-bottom: 10px;
-    word-break: break-word; 
+    word-break: break-word;
 }
 
 .etiqueta {
-    font-size: clamp(0.75rem, 2vw, 0.9rem); 
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
     font-weight: normal;
-}
-
-.entrada-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 .tempo-display {
@@ -136,8 +112,8 @@ body {
     height: 100%;
     display: flex;
     gap: 10px;
-    align-content: flex-start;
     justify-content: center;
+    flex: 3; /* Dar más espacio a los controles de audio */
 }
 
 .control-categoria {
@@ -145,18 +121,20 @@ body {
     display: flex;
     padding: 10px;
     flex-direction: column;
-    justify-content: space-between; 
     align-items: center;
     border: 3px solid var(--color-seccion);
     border-radius: 12px;
     text-align: center;
+    flex: 1; /* Distribuir el espacio equitativamente */
+    min-width: 80px; /* Ancho mínimo */
+    max-width: 110px; /* Ancho máximo */
 }
 
 .botones-categoria {
     margin-top: auto;
     display: flex;
     flex-direction: row;
-    gap: 5px; 
+    gap: 5px;
     width: 100%;
     justify-content: center;
 }
@@ -180,8 +158,6 @@ body {
     border-radius: 50%;
     background-color: var(--color-seccion);
     position: absolute;
-    top: 0;
-    left: 0;
 }
 
 .deslizador-circular .circulo-interior {
@@ -203,7 +179,6 @@ body {
     top: 50%;
     left: 50%;
     transform-origin: left center;
-    transform: translate(-50%, -50%) rotate(0deg);
     border-color: var(--color-seccion);
     border-style: solid;
     border-radius: 5px;
@@ -213,67 +188,61 @@ body {
 .deslizador-item-vertical {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between ;
     align-items: center;
     gap: 10px;
     flex-grow: 1;
+    width: 100%;
 }
 
 .deslizador-vertical-contenedor {
-    height: 100%;
+    flex-grow: 1;
+    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 80px;
-    width: 10vh;
-
+    padding: 10px 0;
 }
 
-.deslizador-vertical {
-    -webkit-appearance: none;
-    appearance: none;
-    background: linear-gradient(to right,
-        rgba(var(--color-seccion-rgb), 0.5) 0%,
-        rgba(var(--color-seccion-rgb), 0.5) var(--fill-percentage, 50%),
-        transparent var(--fill-percentage, 50%),
-        transparent 100%
-    );
-    outline: none;
-    opacity: 0.9;
-    transition: opacity .2s;
+.deslizador-vertical-js {
+    position: relative;
+    width: 12px;
+    height: 100%;
     cursor: pointer;
+}
+
+.deslizador-vertical-js .track {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--color-seccion-rgb), 0.15);
     border: 2px solid var(--color-seccion);
-    border-radius: 6px; 
-    transform-origin: center center;
-    transform: rotate(-90deg);
-    height: 10px; 
-    width: 400px ;
+    border-radius: 6px;
+    box-sizing: border-box;
 }
 
-.deslizador-vertical:hover {
-    opacity: 1;
+.deslizador-vertical-js .fill {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: var(--color-seccion);
+    border-radius: 4px; /* Un poco menos que el track para que encaje dentro */
 }
 
-.deslizador-vertical::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 10px;
-    height: 30px;
-    border-radius: 12%;
-    background: var(--color-seccion);
-    cursor: pointer;
-    box-shadow: 0 0 2px rgba(0,0,0,0.5);
+.deslizador-vertical-js .thumb {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 15px;
+    background-color: var(--color-seccion);
+    border: 2px solid var(--consola-fondo);
+    border-radius: 4px;
+    box-shadow: 0 0 4px rgba(0,0,0,0.5);
+    box-sizing: border-box;
 }
+/* --- FIN: Estilos para el nuevo Deslizador Vertical JS --- */
 
-.deslizador-vertical::-moz-range-thumb {
-    width: 10px;
-    height: 30px;
-    border-radius: 12%;
-    background: var(--color-seccion);
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 0 2px rgba(0,0,0,0.5);
-}
 
 #encender, #detener, #grabar, #descargar {
     width: 40px;
@@ -290,32 +259,30 @@ body {
 }
 
 #encender.activo { background-color: #9ee99e; }
-#encender i { color: #E65252; }
-#encender.activo i { color: black; }
-#grabar:active { background-color: #f99; }
-#grabar i { color: black; }
+#encender.activo i { color: var(--consola-borde); }
 #grabar.activo i { color: #E65252; }
 #descargar:disabled { opacity: 0.5; cursor: not-allowed; }
+#encender i { color: #E65252; }
+#descargar i { color: var(--consola-borde); }
+#detener i{ color: var(--consola-borde); }
+#grabar i { color: var(--consola-borde); }
 
 .visualizador {
-    flex: 1;
+    flex: 2;
+    min-width: 200px;
     height: 100%;
     display: flex;
     border-radius: 12px;
     border: 3px solid var(--consola-borde);
-    min-width: 150px;
-    /* --- INICIO: Estilos actualizados para el visualizador --- */
     flex-direction: column;
-    align-items: stretch; /* Estira los items para que ocupen todo el ancho */
-    justify-content: flex-start; /* Alinea la lista al principio */
+    align-items: stretch;
+    justify-content: flex-start;
     padding: 10px;
     gap: 8px;
     overflow-y: auto;
-    background-color: rgba(0,0,0,0.02); /* Un fondo muy sutil */
-    /* --- FIN: Estilos actualizados --- */
+    background-color: rgba(0,0,0,0.02);
 }
 
-/* --- INICIO: Estilos para la lista de audios en el visualizador --- */
 .visualizador-item {
     padding: 8px 12px;
     border-radius: 8px;
@@ -323,7 +290,7 @@ body {
     color: white;
     font-weight: bold;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
-    flex-shrink: 0; /* Evita que los items se encojan */
+    flex-shrink: 0;
 }
 
 .visualizador-item.armonia { background-color: var(--armonia-color); }
@@ -338,8 +305,6 @@ body {
     font-style: italic;
     font-size: 0.9rem;
 }
-/* --- FIN: Estilos para la lista --- */
-
 
 .selectores-audios {
     height: 100%;
@@ -421,17 +386,16 @@ body {
     color: white;
     padding: 6px 10px;
     border-radius: 5px;
-    z-index: 9999; 
+    z-index: 9999;
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease, transform 0.2s ease;
     transform: translate(-50%, -50%);
-    white-space: nowrap; 
+    white-space: nowrap;
 }
 
 #audio-tooltip.visible {
     opacity: 1;
     visibility: visible;
 }
-

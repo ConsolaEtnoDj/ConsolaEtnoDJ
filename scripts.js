@@ -15,6 +15,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let consolaEncendida = false;
     let enPausa = false;
 
+    // --- INICIO: Inicialización de componentes ---
+    // Inicializar deslizadores circulares
+    new DeslizadorCircular(document.getElementById('volumen'), { value: 50, id: 'volumen' });
+
+    // Inicializar deslizadores verticales
+    document.querySelectorAll('.deslizador-vertical-js').forEach(container => {
+        const id = container.id;
+        new DeslizadorVertical(container, { id: id, value: 50 });
+        volumenesOriginales[id] = 0.5; // Guardar valor inicial
+    });
+    // --- FIN: Inicialización de componentes ---
+
     function actualizarVisualizador() {
         while (visualizador.firstChild) {
             visualizador.removeChild(visualizador.firstChild);
@@ -22,15 +34,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const audiosSeleccionados = document.querySelectorAll('.selector.active');
         
-        if (audiosSeleccionados.length === 0) {
+        if (audiosSeleccionados.length === 0 && visualizador.children.length === 0) {
+            // CORREGIDO: El error estaba aquí.
+            const placeholder = document.createElement('div');
+            placeholder.className = 'visualizador-placeholder';
+            
             const img = document.createElement('img');
-            img.src = '/Imagenes/etno-dj.png';
+            img.src = 'Imagenes/etno-dj.png';
             img.alt = 'Visualizador EtnoDJ';
             img.style.maxWidth = '80%';
             img.style.maxHeight = '80%';
             img.style.borderRadius = '12px';
             img.style.margin = 'auto';
-            visualizador.appendChild(img);
+            img.style.opacity = '0.5';
+            placeholder.appendChild(img);
+            visualizador.appendChild(placeholder);
             return;
         }
 
@@ -134,19 +152,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!audioBuffer) return;
             fuentesAudio[button.id] = { buffer: audioBuffer, source: null, gainNode: null };
 
-            // CORRECCIÓN: Se reestructura el manejador de clic para mayor robustez.
             button.addEventListener('click', function() {
                 if (!consolaEncendida) return;
-
-                // 1. Alterna el estado visual del botón.
                 this.classList.toggle('active');
-                
-                // 2. Actualiza la lista del visualizador inmediatamente.
                 actualizarVisualizador();
                 
                 const isActive = this.classList.contains('active');
 
-                // 3. Maneja la lógica de audio.
                 if (isActive) {
                     const { source, gainNode } = reproducirAudio(fuentesAudio[this.id].buffer);
                     fuentesAudio[this.id] = { ...fuentesAudio[this.id], source, gainNode };
@@ -161,8 +173,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         fuentesAudio[this.id].gainNode = null;
                     }
                 }
-
-                // 4. Actualiza el estado 'sonando' de todos los botones.
                 actualizarBotonesDeAudios();
             });
         });
@@ -174,22 +184,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const { id, value } = event.detail;
         const gainValue = value / 100;
         if (!isFinite(gainValue)) return;
-        masterGainNode.gain.setValueAtTime(gainValue, contextoAudio.currentTime);
-    });
 
-    document.querySelectorAll('.deslizador-vertical').forEach(slider => {
-        const initialPercentage = slider.value;
-        slider.style.setProperty('--fill-percentage', `${initialPercentage}%`);
-        slider.addEventListener('input', (event) => {
-            const id = event.target.id;
-            const value = parseFloat(event.target.value);
-            const gainValue = value / 100;
-            event.target.style.setProperty('--fill-percentage', `${value}%`);
-            if (!isFinite(gainValue)) return;
-            volumenesOriginales[id] = gainValue;
+        if (id === 'volumen') { // Volumen Maestro
+            masterGainNode.gain.setValueAtTime(gainValue, contextoAudio.currentTime);
+        } else if (id.startsWith('volumen-')) { // Volúmenes de Categoría
+            volumenesOriginales[id] = gainValue; // Actualizar el volumen de referencia
             Object.keys(fuentesAudio).forEach(key => {
                 const btn = document.getElementById(key);
-                if (!btn || btn.dataset.section !== id) return;
+                if (!btn || btn.dataset.section !== id) return; 
+                
                 const fuente = fuentesAudio[key];
                 if (fuente.gainNode) {
                     const seccionId = id.replace('volumen-', '');
@@ -199,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             });
-        });
+        }
     });
 
     function actualizarEstadoAudio() {
@@ -237,9 +240,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
              document.querySelectorAll('.selector, .mute, .solo').forEach(b => b.classList.remove('active', 'sonando', 'activo'));
-             document.querySelectorAll('.deslizador-vertical').forEach(s => {
-                s.value = 50;
-                s.style.setProperty('--fill-percentage', '50%');
+             
+             document.querySelectorAll('.deslizador-vertical-js').forEach(container => {
+                if (container.__deslizadorVertical__) {
+                    container.__deslizadorVertical__.valor = 50;
+                    container.__deslizadorVertical__.dibujar();
+                }
              });
              const volGeneral = document.getElementById('volumen').__deslizadorCircular__;
              if(volGeneral) {
@@ -278,16 +284,13 @@ document.addEventListener('DOMContentLoaded', function() {
         botonGrabar.classList.toggle('activo', grabando);
         if (grabando) {
             chunks = [];
-            Object.values(fuentesAudio).forEach(fuente => {
-                if (fuente.gainNode && fuente.source) {
-                     fuente.gainNode.connect(mediaStreamDestinoGlobal);
-                }
-            });
+            masterGainNode.connect(mediaStreamDestinoGlobal);
             mediaRecorder = new MediaRecorder(mediaStreamDestinoGlobal.stream);
             mediaRecorder.ondataavailable = e => chunks.push(e.data);
             mediaRecorder.onstop = () => {
                 grabacionBlob = new Blob(chunks, { type: 'audio/webm' });
                 botonDescargar.disabled = false;
+                masterGainNode.disconnect(mediaStreamDestinoGlobal);
             };
             mediaRecorder.start();
         } else {

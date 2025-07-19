@@ -11,34 +11,30 @@
     <div class="consola">
         <div class="controles-superiores">
             <div class="control-panel">
-                <h2 class="titulo">Consola</h2>
-                <div class="control-actuadores">
-                    <div class="controles-reproduccion">
-                        <button id="encender"><i class="fa-solid fa-power-off"></i></button>
-                        <button id="detener"><i class="fa-solid fa-play"></i></button>
-                        <button id="grabar"><i class="fa-solid fa-circle"></i></button>
-                        <button id="descargar" disabled><i class="fa-solid fa-download"></i></button>
-                    </div>
-                    <div class="entrada-item">
-                        <div class="deslizador-item">
-                            <div class="deslizador-circular" id="volumen"></div>
-                            <h3 class="etiqueta">Volumen</h3>
-                        </div>
-                         <div class="tempo-display">
-                            <span>120</span>
-                            <div class="tempo-circle"></div>
-                         </div>
-                        <h3 class="etiqueta">Tempo</h3>
-                    </div>
+                <button id="encender"><i class="fa-solid fa-power-off"></i></button>
+                <button id="detener"><i class="fa-solid fa-play"></i></button>
+                <button id="grabar"><i class="fa-solid fa-circle"></i></button>
+                <button id="descargar" disabled><i class="fa-solid fa-download"></i></button>
+            </div>
+            <div class="control-panel">
+                <div class="deslizador-item">
+                    <div class="deslizador-circular" id="volumen"></div>
+                    <h3 class="etiqueta">Volumen</h3>
                 </div>
+                    <div class="tempo-display">
+                    <span>120</span>
+                    <div class="tempo-circle"></div>
+                    </div>
+                <h3 class="etiqueta">Tempo</h3>
             </div>
 
             <div class="control-audios">
+                <!-- Categoría Armonía -->
                 <div class="control-categoria" id="armonia">
                     <h2 class="titulo">Armonía</h2>
                     <div class="deslizador-item-vertical">
                         <div class="deslizador-vertical-contenedor">
-                            <input type="range" min="0" max="100" value="50" class="deslizador-vertical" id="volumen-armonia">
+                            <div class="deslizador-vertical-js" id="volumen-armonia"></div>
                         </div>
                         <h3 class="etiqueta">Volumen</h3>
                     </div>
@@ -47,11 +43,12 @@
                         <button class="solo" id="solo-armonia">S</button>
                     </div>
                 </div>
+                <!-- Categoría Melodía -->
                 <div class="control-categoria" id="melodia">
                     <h2 class="titulo">Melodía</h2>
                     <div class="deslizador-item-vertical">
                          <div class="deslizador-vertical-contenedor">
-                            <input type="range" min="0" max="100" value="50" class="deslizador-vertical" id="volumen-melodia">
+                            <div class="deslizador-vertical-js" id="volumen-melodia"></div>
                         </div>
                         <h3 class="etiqueta">Volumen</h3>
                     </div>
@@ -60,11 +57,12 @@
                         <button class="solo" id="solo-melodia">S</button>
                     </div>
                 </div>
+                <!-- Categoría Ritmo -->
                 <div class="control-categoria" id="ritmo">
                     <h2 class="titulo">Ritmo</h2>
                     <div class="deslizador-item-vertical" >
                         <div class="deslizador-vertical-contenedor">
-                            <input type="range" min="0" max="100" value="50" class="deslizador-vertical" id="volumen-ritmo">
+                            <div class="deslizador-vertical-js" id="volumen-ritmo"></div>
                         </div>
                         <h3 class="etiqueta">Volumen</h3>
                     </div>
@@ -73,11 +71,12 @@
                         <button class="solo" id="solo-ritmo">S</button>
                     </div>
                 </div>
+                <!-- Categoría Fondo -->
                 <div class="control-categoria" id="fondo">
                     <h2 class="titulo">Fondo</h2>
                     <div class="deslizador-item-vertical">
                         <div class="deslizador-vertical-contenedor">
-                            <input type="range" min="0" max="100" value="50" class="deslizador-vertical" id="volumen-fondo">
+                           <div class="deslizador-vertical-js" id="volumen-fondo"></div>
                         </div>
                         <h3 class="etiqueta">Volumen</h3>
                     </div>
@@ -86,11 +85,12 @@
                         <button class="solo" id="solo-fondo">S</button>
                     </div>
                 </div>
+                <!-- Categoría Adornos -->
                 <div class="control-categoria" id="adornos">
                     <h2 class="titulo">Adornos</h2>
                     <div class="deslizador-item-vertical">
                         <div class="deslizador-vertical-contenedor">
-                            <input type="range" min="0" max="100" value="50" class="deslizador-vertical" id="volumen-adornos">
+                            <div class="deslizador-vertical-js" id="volumen-adornos"></div>
                         </div>
                         <h3 class="etiqueta">Volumen</h3>
                     </div>
@@ -101,14 +101,14 @@
                 </div>
             </div>
              <div class="visualizador">
-                <!-- La imagen ha sido eliminada. El contenido se generará con JS. -->
+                <!-- La imagen transiciona y el contenido se generará con JS. -->
             </div>
         </div>
 
         <div class="selectores-audios">
             <div class="fila" data-section="volumen-armonia">
                 <button class="selector armonia" id="selector1" data-audio="Audios/Canto_Maguaré.mp3"></button>
-                <button class="selector armonia" id="selector2"  data-audio=""></button>
+                <button class="selector armonia" id="selector2"  data-audio="Audios/Bambuco.mp3"></button>
             </div>
             <div class="fila" data-section="volumen-melodia">
                 <button class="selector melodia" id="selector3" data-audio="Audios/Canto_a_Yoi.mp3"></button>
@@ -154,6 +154,7 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/audiobuffer-to-wav@1.0.0/index.min.js"></script>
     <script src="deslizador-circular.js"></script>
+    <script src="deslizador-vertical.js"></script>
     <script src="scripts.js"></script>
 </body>
 </html>
