@@ -18,37 +18,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // Objeto para almacenar la información de los audios del CSV
     const audioMetadata = {};
 
+    // Mapa para almacenar los audios únicos utilizados durante la grabación para la factura
+    let audiosUtilizadosEnGrabacion = new Map();
+
     // --- INICIO: Carga y parseo del CSV ---
-    // Función para parsear CSV
     async function parseCSV(url) {
         const response = await fetch(url);
         const text = await response.text();
         const lines = text.split('\n');
-        // Los encabezados están en la segunda línea (índice 1)
         const headers = lines[1].split(',').map(header => header.trim()); 
-        // Los datos comienzan desde la tercera línea (índice 2)
         const dataLines = lines.slice(2); 
 
         dataLines.forEach(line => {
             const values = parseCSVLine(line);
-            if (values.length > 1) { // Asegurarse de que la línea no esté vacía
-                const fileName = values[0]; // Columna 1
-                const title = values[1];    // Columna 2
-                const region = values[3];   // Columna 4
-                const department = values[4]; // Columna 5: Departamento
+            if (values.length > 1) {
+                const fileName = values[0];
+                const title = values[1];
+                const region = values[3];
+                const department = values[4];
                 if (fileName && title && region && department) {
-                    // Normalizar el nombre del archivo a NFC para asegurar la consistencia
                     audioMetadata[fileName.trim().normalize('NFC')] = {
                         title: title.trim(),
                         region: region.trim(),
-                        department: department.trim() // Guardar el departamento
+                        department: department.trim()
                     };
                 }
             }
         });
     }
 
-    // Función auxiliar para parsear líneas CSV que pueden contener comas dentro de comillas
     function parseCSVLine(line) {
         const result = [];
         let inQuote = false;
@@ -64,18 +62,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentField += char;
             }
         }
-        result.push(currentField); // Añadir el último campo
+        result.push(currentField);
         return result;
     }
 
-    // Cargar los metadatos del CSV al inicio
-    // IMPORTANTE: Asegúrate de que "Consola.csv" sea un archivo CSV real, no un XLSX renombrado.
-    // Debes guardar tu archivo XLSX como CSV desde tu programa de hojas de cálculo.
     parseCSV('Consola.csv').then(() => {
         console.log('Metadatos de audio cargados:', audioMetadata);
-        // Una vez que los metadatos están cargados, inicializar los botones de audio
         inicializarBotonesAudio();
-        // Actualizar visualizador después de cargar metadatos
         actualizarVisualizador(); 
     }).catch(error => {
         console.error('Error al cargar o parsear el CSV:', error);
@@ -83,14 +76,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- FIN: Carga y parseo del CSV ---
 
     // --- INICIO: Inicialización de componentes ---
-    // Inicializar deslizadores circulares
     new DeslizadorCircular(document.getElementById('volumen'), { value: 50, id: 'volumen' });
 
-    // Inicializar deslizadores verticales
     document.querySelectorAll('.deslizador-vertical-js').forEach(container => {
         const id = container.id;
         new DeslizadorVertical(container, { id: id, value: 50 });
-        volumenesOriginales[id] = 0.5; // Guardar valor inicial
+        volumenesOriginales[id] = 0.5;
     });
     // --- FIN: Inicialización de componentes ---
 
@@ -120,16 +111,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const categorias = ['armonia', 'melodia', 'ritmo', 'fondo', 'adornos'];
         audiosSeleccionados.forEach(boton => {
-            // Normalizar el nombre del archivo a NFC para asegurar la consistencia
             const audioFileName = boton.getAttribute('data-audio').split('/').pop().normalize('NFC');
             const metadata = audioMetadata[audioFileName];
             let displayText = '';
 
             if (metadata) {
-                // Formato: Título - Región - Departamento: Departamento
                 displayText = `${metadata.title} - ${metadata.region} - Departamento: ${metadata.department}`;
             } else {
-                // Fallback si no se encuentra en los metadatos
                 const nombreArchivoSinExtension = audioFileName.replace(/\.[^/.]+$/, "").replace(/_/g, ' ');
                 displayText = nombreArchivoSinExtension.charAt(0).toUpperCase() + nombreArchivoSinExtension.slice(1);
             }
@@ -195,7 +183,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Función para inicializar los botones de audio después de que los metadatos estén cargados
     function inicializarBotonesAudio() {
         botonesAudio.forEach((button) => {
             button.dataset.active = 'false';
@@ -204,19 +191,9 @@ document.addEventListener('DOMContentLoaded', function() {
             button.setAttribute('data-section', sectionId);
             
             if (audioUrl) {
-                // Normalizar el nombre del archivo a NFC para asegurar la consistencia
                 const audioFileName = audioUrl.split('/').pop().normalize('NFC');
                 const metadata = audioMetadata[audioFileName];
-                let tooltipText = '';
-
-                if (metadata) {
-                    // Solo el título para el tooltip
-                    tooltipText = metadata.title;
-                } else {
-                    // Fallback si no se encuentra en los metadatos
-                    const nombreArchivoSinExtension = audioFileName.replace(/\.[^/.]+$/, "").replace(/_/g, ' '); 
-                    tooltipText = nombreArchivoSinExtension.charAt(0).toUpperCase() + nombreArchivoSinExtension.slice(1);
-                }
+                let tooltipText = metadata ? metadata.title : audioFileName.replace(/\.[^/.]+$/, "").replace(/_/g, ' ');
                 button.setAttribute('data-tooltip', tooltipText);
             }
 
@@ -248,7 +225,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     actualizarVisualizador();
                     
                     const isActive = this.classList.contains('active');
-
                     if (isActive) {
                         const { source, gainNode } = reproducirAudio(fuentesAudio[this.id].buffer);
                         fuentesAudio[this.id] = { ...fuentesAudio[this.id], source, gainNode };
@@ -256,6 +232,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         const volumenOriginal = volumenesOriginales[this.dataset.section] ?? 0.5;
                         const debeSonar = seccionDebeSonar(seccionId);
                         gainNode.gain.setValueAtTime(debeSonar && !enPausa ? volumenOriginal : 0, contextoAudio.currentTime);
+                        
+                        if (grabando) {
+                            const audioFileName = this.getAttribute('data-audio').split('/').pop().normalize('NFC');
+                            const metadata = audioMetadata[audioFileName];
+                            if (metadata) {
+                                audiosUtilizadosEnGrabacion.set(audioFileName, metadata);
+                            }
+                        }
+
                     } else {
                         if (fuentesAudio[this.id].source) {
                             fuentesAudio[this.id].source.stop();
@@ -267,21 +252,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
         });
-        // Llama a actualizarVisualizador aquí también para mostrar el placeholder inicial
         actualizarVisualizador();
     }
     
-    // El resto del código permanece igual
-
     document.addEventListener('valuechange', (event) => {
         const { id, value } = event.detail;
         const gainValue = value / 100;
         if (!isFinite(gainValue)) return;
 
-        if (id === 'volumen') { // Volumen Maestro
+        if (id === 'volumen') {
             masterGainNode.gain.setValueAtTime(gainValue, contextoAudio.currentTime);
-        } else if (id.startsWith('volumen-')) { // Volúmenes de Categoría
-            volumenesOriginales[id] = gainValue; // Actualizar el volumen de referencia
+        } else if (id.startsWith('volumen-')) {
+            volumenesOriginales[id] = gainValue;
             Object.keys(fuentesAudio).forEach(key => {
                 const btn = document.getElementById(key);
                 if (!btn || btn.dataset.section !== id) return; 
@@ -346,6 +328,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 volGeneral.dibujar();
                 volGeneral.emitirCambioValor();
              }
+            grabando = false;
+            audiosUtilizadosEnGrabacion.clear();
+            botonGrabar.classList.remove('activo');
+            botonDescargar.disabled = true;
         }
         botonDetener.querySelector('i').className = `fa-solid ${consolaEncendida && !enPausa ? 'fa-pause' : 'fa-play'}`;
         actualizarBotonesDeAudios();
@@ -377,6 +363,16 @@ document.addEventListener('DOMContentLoaded', function() {
         botonGrabar.classList.toggle('activo', grabando);
         if (grabando) {
             chunks = [];
+            audiosUtilizadosEnGrabacion.clear();
+
+            document.querySelectorAll('.selector.active').forEach(button => {
+                const audioFileName = button.getAttribute('data-audio').split('/').pop().normalize('NFC');
+                const metadata = audioMetadata[audioFileName];
+                if (metadata) {
+                    audiosUtilizadosEnGrabacion.set(audioFileName, metadata);
+                }
+            });
+
             masterGainNode.connect(mediaStreamDestinoGlobal);
             mediaRecorder = new MediaRecorder(mediaStreamDestinoGlobal.stream);
             mediaRecorder.ondataavailable = e => chunks.push(e.data);
@@ -391,16 +387,68 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    botonDescargar.addEventListener('click', async () => {
-        if (!grabacionBlob) return;
-        const arrayBuffer = await grabacionBlob.arrayBuffer();
-        const audioBuffer = await contextoAudio.decodeAudioData(arrayBuffer);
-        const wavBlob = new Blob([audioBufferToWav(audioBuffer)], { type: 'audio/wav' });
-        const url = URL.createObjectURL(wavBlob);
-        const a = Object.assign(document.createElement('a'), { href: url, download: 'grabacion_etnodj.wav', style: "display:none" });
-        document.body.appendChild(a).click();
+    function crearYDescargarFactura() {
+        if (audiosUtilizadosEnGrabacion.size === 0) {
+            console.log("No se utilizaron audios en la grabación. No se genera factura.");
+            return;
+        }
+    
+        const fecha = new Date();
+        const fechaFormato = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const horaFormato = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    
+        let contenidoFactura = `🧾 ETNODJ - FACTURA DE GRABACIÓN\n\n`;
+        contenidoFactura += `Fecha: ${fechaFormato}, ${horaFormato}\n`;
+        contenidoFactura += `Audios utilizados:\n\n`;
+    
+        let contador = 1;
+        audiosUtilizadosEnGrabacion.forEach((metadata) => {
+            const nombre = metadata.title;
+            const region = metadata.region;
+            const depto = metadata.department;
+            contenidoFactura += `${contador}. ${nombre} - ${region} - Departamento: ${depto}\n`;
+            contador++;
+        });
+    
+        contenidoFactura += `\n\nTotal: ${audiosUtilizadosEnGrabacion.size} audio(s)\n\n`;
+        contenidoFactura += `Gracias por usar ETNODJ!`;
+    
+        const nombreArchivo = `factura_etnodj_${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}.txt`;
+        const blob = new Blob([contenidoFactura], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = nombreArchivo;
+        document.body.appendChild(a);
+        a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    }
+
+    botonDescargar.addEventListener('click', async () => {
+        if (!grabacionBlob) return;
+        
+        // Descargar el archivo de audio en formato WAV
+        // La función audioBufferToWav es provista por la librería externa cargada en index.html
+        try {
+            const arrayBuffer = await grabacionBlob.arrayBuffer();
+            const audioBuffer = await contextoAudio.decodeAudioData(arrayBuffer);
+            const wavData = audioBufferToWav(audioBuffer);
+            const wavBlob = new Blob([wavData], { type: 'audio/wav' });
+            const urlAudio = URL.createObjectURL(wavBlob);
+            const aAudio = Object.assign(document.createElement('a'), { href: urlAudio, download: 'grabacion_etnodj.wav', style: "display:none" });
+            document.body.appendChild(aAudio).click();
+            document.body.removeChild(aAudio);
+            URL.revokeObjectURL(urlAudio);
+        } catch (error) {
+            console.error("Error al convertir la grabación a WAV:", error);
+            alert("Hubo un error al procesar el audio. La descarga no pudo completarse.");
+        }
+
+        // Crear y descargar la factura en formato TXT
+        crearYDescargarFactura();
+
+        botonDescargar.disabled = true;
     });
 
     document.querySelectorAll('.mute, .solo').forEach(btn => {
