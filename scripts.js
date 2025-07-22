@@ -15,6 +15,73 @@ document.addEventListener('DOMContentLoaded', function() {
     let consolaEncendida = false;
     let enPausa = false;
 
+    // Objeto para almacenar la información de los audios del CSV
+    const audioMetadata = {};
+
+    // --- INICIO: Carga y parseo del CSV ---
+    // Función para parsear CSV
+    async function parseCSV(url) {
+        const response = await fetch(url);
+        const text = await response.text();
+        const lines = text.split('\n');
+        // Los encabezados están en la segunda línea (índice 1)
+        const headers = lines[1].split(',').map(header => header.trim()); 
+        // Los datos comienzan desde la tercera línea (índice 2)
+        const dataLines = lines.slice(2); 
+
+        dataLines.forEach(line => {
+            const values = parseCSVLine(line);
+            if (values.length > 1) { // Asegurarse de que la línea no esté vacía
+                const fileName = values[0]; // Columna 1
+                const title = values[1];    // Columna 2
+                const region = values[3];   // Columna 4
+                const department = values[4]; // Columna 5: Departamento
+                if (fileName && title && region && department) {
+                    // Normalizar el nombre del archivo a NFC para asegurar la consistencia
+                    audioMetadata[fileName.trim().normalize('NFC')] = {
+                        title: title.trim(),
+                        region: region.trim(),
+                        department: department.trim() // Guardar el departamento
+                    };
+                }
+            }
+        });
+    }
+
+    // Función auxiliar para parsear líneas CSV que pueden contener comas dentro de comillas
+    function parseCSVLine(line) {
+        const result = [];
+        let inQuote = false;
+        let currentField = '';
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                inQuote = !inQuote;
+            } else if (char === ',' && !inQuote) {
+                result.push(currentField);
+                currentField = '';
+            } else {
+                currentField += char;
+            }
+        }
+        result.push(currentField); // Añadir el último campo
+        return result;
+    }
+
+    // Cargar los metadatos del CSV al inicio
+    // IMPORTANTE: Asegúrate de que "Consola.csv" sea un archivo CSV real, no un XLSX renombrado.
+    // Debes guardar tu archivo XLSX como CSV desde tu programa de hojas de cálculo.
+    parseCSV('Consola.csv').then(() => {
+        console.log('Metadatos de audio cargados:', audioMetadata);
+        // Una vez que los metadatos están cargados, inicializar los botones de audio
+        inicializarBotonesAudio();
+        // Actualizar visualizador después de cargar metadatos
+        actualizarVisualizador(); 
+    }).catch(error => {
+        console.error('Error al cargar o parsear el CSV:', error);
+    });
+    // --- FIN: Carga y parseo del CSV ---
+
     // --- INICIO: Inicialización de componentes ---
     // Inicializar deslizadores circulares
     new DeslizadorCircular(document.getElementById('volumen'), { value: 50, id: 'volumen' });
@@ -34,8 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const audiosSeleccionados = document.querySelectorAll('.selector.active');
         
-        if (audiosSeleccionados.length === 0 && visualizador.children.length === 0) {
-            // CORREGIDO: El error estaba aquí.
+        if (audiosSeleccionados.length === 0) {
             const placeholder = document.createElement('div');
             placeholder.className = 'visualizador-placeholder';
             
@@ -54,25 +120,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const categorias = ['armonia', 'melodia', 'ritmo', 'fondo', 'adornos'];
         audiosSeleccionados.forEach(boton => {
-            const nombreAudio = boton.getAttribute('data-tooltip');
-            if (nombreAudio) {
-                const itemAudio = document.createElement('div');
-                itemAudio.className = 'visualizador-item';
-                itemAudio.textContent = nombreAudio;
-                
-                let categoriaEncontrada = '';
-                for (const cat of categorias) {
-                    if (boton.classList.contains(cat)) {
-                        categoriaEncontrada = cat;
-                        break;
-                    }
-                }
-                if (categoriaEncontrada) {
-                    itemAudio.classList.add(categoriaEncontrada);
-                }
+            // Normalizar el nombre del archivo a NFC para asegurar la consistencia
+            const audioFileName = boton.getAttribute('data-audio').split('/').pop().normalize('NFC');
+            const metadata = audioMetadata[audioFileName];
+            let displayText = '';
 
-                visualizador.appendChild(itemAudio);
+            if (metadata) {
+                // Formato: Título - Región - Departamento: Departamento
+                displayText = `${metadata.title} - ${metadata.region} - Departamento: ${metadata.department}`;
+            } else {
+                // Fallback si no se encuentra en los metadatos
+                const nombreArchivoSinExtension = audioFileName.replace(/\.[^/.]+$/, "").replace(/_/g, ' ');
+                displayText = nombreArchivoSinExtension.charAt(0).toUpperCase() + nombreArchivoSinExtension.slice(1);
             }
+
+            const itemAudio = document.createElement('div');
+            itemAudio.className = 'visualizador-item';
+            itemAudio.textContent = displayText;
+            
+            let categoriaEncontrada = '';
+            for (const cat of categorias) {
+                if (boton.classList.contains(cat)) {
+                    categoriaEncontrada = cat;
+                    break;
+                }
+            }
+            if (categoriaEncontrada) {
+                itemAudio.classList.add(categoriaEncontrada);
+            }
+
+            visualizador.appendChild(itemAudio);
         });
     }
 
@@ -118,67 +195,83 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    botonesAudio.forEach((button) => {
-        button.dataset.active = 'false';
-        const audioUrl = button.getAttribute('data-audio');
-        const sectionId = button.closest('.fila').dataset.section;
-        button.setAttribute('data-section', sectionId);
-        
-        if (audioUrl) {
-            const nombreArchivo = audioUrl.split('/').pop().replace(/\.[^/.]+$/, "").replace(/_/g, ' '); 
-            const nombreFormateado = nombreArchivo.charAt(0).toUpperCase() + nombreArchivo.slice(1);
-            button.setAttribute('data-tooltip', nombreFormateado);
-        }
+    // Función para inicializar los botones de audio después de que los metadatos estén cargados
+    function inicializarBotonesAudio() {
+        botonesAudio.forEach((button) => {
+            button.dataset.active = 'false';
+            const audioUrl = button.getAttribute('data-audio');
+            const sectionId = button.closest('.fila').dataset.section;
+            button.setAttribute('data-section', sectionId);
+            
+            if (audioUrl) {
+                // Normalizar el nombre del archivo a NFC para asegurar la consistencia
+                const audioFileName = audioUrl.split('/').pop().normalize('NFC');
+                const metadata = audioMetadata[audioFileName];
+                let tooltipText = '';
 
-        button.addEventListener('mouseenter', () => {
-            if (!consolaEncendida) return;
-            const tooltipText = button.getAttribute('data-tooltip');
-            if (tooltipText) {
-                tooltip.textContent = tooltipText;
-                tooltip.classList.add('visible');
-                const btnRect = button.getBoundingClientRect();
-                const left = btnRect.left + (btnRect.width / 2);
-                const top = btnRect.top + (btnRect.height / 2);
-                tooltip.style.left = `${left}px`;
-                tooltip.style.top = `${top}px`;
-            }
-        });
-
-        button.addEventListener('mouseleave', () => {
-            tooltip.classList.remove('visible');
-        });
-
-        cargarAudio(audioUrl).then(audioBuffer => {
-            if (!audioBuffer) return;
-            fuentesAudio[button.id] = { buffer: audioBuffer, source: null, gainNode: null };
-
-            button.addEventListener('click', function() {
-                if (!consolaEncendida) return;
-                this.classList.toggle('active');
-                actualizarVisualizador();
-                
-                const isActive = this.classList.contains('active');
-
-                if (isActive) {
-                    const { source, gainNode } = reproducirAudio(fuentesAudio[this.id].buffer);
-                    fuentesAudio[this.id] = { ...fuentesAudio[this.id], source, gainNode };
-                    const seccionId = this.dataset.section.replace('volumen-', '');
-                    const volumenOriginal = volumenesOriginales[this.dataset.section] ?? 0.5;
-                    const debeSonar = seccionDebeSonar(seccionId);
-                    gainNode.gain.setValueAtTime(debeSonar && !enPausa ? volumenOriginal : 0, contextoAudio.currentTime);
+                if (metadata) {
+                    // Solo el título para el tooltip
+                    tooltipText = metadata.title;
                 } else {
-                    if (fuentesAudio[this.id].source) {
-                        fuentesAudio[this.id].source.stop();
-                        fuentesAudio[this.id].source = null;
-                        fuentesAudio[this.id].gainNode = null;
-                    }
+                    // Fallback si no se encuentra en los metadatos
+                    const nombreArchivoSinExtension = audioFileName.replace(/\.[^/.]+$/, "").replace(/_/g, ' '); 
+                    tooltipText = nombreArchivoSinExtension.charAt(0).toUpperCase() + nombreArchivoSinExtension.slice(1);
                 }
-                actualizarBotonesDeAudios();
+                button.setAttribute('data-tooltip', tooltipText);
+            }
+
+            button.addEventListener('mouseenter', () => {
+                if (!consolaEncendida) return;
+                const tooltipText = button.getAttribute('data-tooltip');
+                if (tooltipText) {
+                    tooltip.textContent = tooltipText;
+                    tooltip.classList.add('visible');
+                    const btnRect = button.getBoundingClientRect();
+                    const left = btnRect.left + (btnRect.width / 2);
+                    const top = btnRect.top + (btnRect.height / 2);
+                    tooltip.style.left = `${left}px`;
+                    tooltip.style.top = `${top}px`;
+                }
+            });
+
+            button.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('visible');
+            });
+
+            cargarAudio(audioUrl).then(audioBuffer => {
+                if (!audioBuffer) return;
+                fuentesAudio[button.id] = { buffer: audioBuffer, source: null, gainNode: null };
+
+                button.addEventListener('click', function() {
+                    if (!consolaEncendida) return;
+                    this.classList.toggle('active');
+                    actualizarVisualizador();
+                    
+                    const isActive = this.classList.contains('active');
+
+                    if (isActive) {
+                        const { source, gainNode } = reproducirAudio(fuentesAudio[this.id].buffer);
+                        fuentesAudio[this.id] = { ...fuentesAudio[this.id], source, gainNode };
+                        const seccionId = this.dataset.section.replace('volumen-', '');
+                        const volumenOriginal = volumenesOriginales[this.dataset.section] ?? 0.5;
+                        const debeSonar = seccionDebeSonar(seccionId);
+                        gainNode.gain.setValueAtTime(debeSonar && !enPausa ? volumenOriginal : 0, contextoAudio.currentTime);
+                    } else {
+                        if (fuentesAudio[this.id].source) {
+                            fuentesAudio[this.id].source.stop();
+                            fuentesAudio[this.id].source = null;
+                            fuentesAudio[this.id].gainNode = null;
+                        }
+                    }
+                    actualizarBotonesDeAudios();
+                });
             });
         });
-    });
+        // Llama a actualizarVisualizador aquí también para mostrar el placeholder inicial
+        actualizarVisualizador();
+    }
     
-    actualizarVisualizador();
+    // El resto del código permanece igual
 
     document.addEventListener('valuechange', (event) => {
         const { id, value } = event.detail;

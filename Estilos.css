@@ -18,7 +18,6 @@
     --control-inactivo: #d9d9d9;
 }
 
-/* --- box-sizing para un layout más predecible --- */
 *, *::before, *::after {
     box-sizing: border-box;
 }
@@ -40,7 +39,7 @@ body {
 }
 
 .consola {
-    width: 80%;
+    width: 85%; /* Ancho ajustado a 85% */
     max-width: 1500px;
     height: 90vh;
     min-height: 650px;
@@ -48,19 +47,29 @@ body {
     flex-direction: column;
     background-color: var(--consola-fondo);
     padding: 20px;
-    gap:20px;
+    gap:20px; /* Gap entre controles-superiores y selectores-audios */
     border: 3px solid var(--consola-borde);
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    min-width: 960px; /* Ancho mínimo para la consola para evitar desbordamientos sin wrap */
 }
 
 .controles-superiores {
     width: 100%;
-    min-height: 40%;
+    /* Se ajusta la altura para que sea el 50% de la altura disponible dentro de consola,
+       considerando el padding de consola y el gap entre las dos secciones principales.
+       Altura total de consola = 90vh.
+       Padding total de consola (top+bottom) = 40px.
+       Gap entre secciones = 20px.
+       La altura de controles-superiores se calcula para que sea el 50% de la altura de la consola,
+       ajustando por la mitad del gap vertical de la consola.
+    */
+    height: calc(45vh - 10px); /* 50% de la altura de la consola (90vh/2 = 45vh) menos la mitad del gap de consola */
     display: flex;
     flex-direction: row;
-    gap: 20px;
-    flex-wrap: wrap;
+    gap: 10px; /* Gap entre los elementos internos de controles-superiores */
+    align-items: flex-start;
+    flex-shrink: 0; /* Asegura que no se encoja */
 }
 
 .control-panel {
@@ -73,6 +82,8 @@ body {
     border: 3px solid var(--control-panel-borde);
     border-radius: 12px;
     text-align: center;
+    flex: 0 0 auto; /* No crecer, no encoger, ancho basado en el contenido */
+    height: 100%; /* Ocupa el 100% de la altura de su padre */
 }
 
 .titulo {
@@ -109,11 +120,15 @@ body {
 }
 
 .control-audios {
-    height: 100%;
+    height: 100%; /* Ocupa el 100% de la altura de su padre */
     display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex: 3; /* Dar más espacio a los controles de audio */
+    gap: 10px; /* Ajustado el gap a 10px */
+    justify-content: flex-start;
+    /* Se cambió flex a 0 0 auto para que ocupe solo el ancho de su contenido */
+    flex: 0 0 auto; 
+    /* El ancho se calcula para contener sus 5 hijos de 110px + 4 gaps de 10px */
+    width: calc((110px * 5) + (10px * 4)); 
+    min-width: calc((80px * 5) + (10px * 4)); /* Mínimo para 5 categorías * 80px + 4 gaps * 10px */
 }
 
 .control-categoria {
@@ -125,7 +140,7 @@ body {
     border: 3px solid var(--color-seccion);
     border-radius: 12px;
     text-align: center;
-    flex: 1; /* Distribuir el espacio equitativamente */
+    flex: 0 0 110px; /* Ancho fijo para cada categoría, no crecer ni encoger */
     min-width: 80px; /* Ancho mínimo */
     max-width: 110px; /* Ancho máximo */
 }
@@ -226,7 +241,7 @@ body {
     bottom: 0;
     width: 100%;
     background-color: var(--color-seccion);
-    border-radius: 4px; /* Un poco menos que el track para que encaje dentro */
+    border-radius: 4px;
 }
 
 .deslizador-vertical-js .thumb {
@@ -236,12 +251,10 @@ body {
     width: 30px;
     height: 15px;
     background-color: var(--color-seccion);
-    border: 2px solid var(--consola-fondo);
     border-radius: 4px;
     box-shadow: 0 0 4px rgba(0,0,0,0.5);
     box-sizing: border-box;
 }
-/* --- FIN: Estilos para el nuevo Deslizador Vertical JS --- */
 
 
 #encender, #detener, #grabar, #descargar {
@@ -268,47 +281,57 @@ body {
 #grabar i { color: var(--consola-borde); }
 
 .visualizador {
-    flex: 2;
+    flex: 1 1 auto; /* Permite que el visualizador ocupe el espacio restante */
     min-width: 200px;
-    height: 100%;
+    height: 100%; /* Ocupa el 100% de la altura de su padre */
     display: flex;
     border-radius: 12px;
     border: 3px solid var(--consola-borde);
     flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
+    align-items: flex-start; /* Alinea los items a la izquierda */
+    justify-content: flex-start; /* Alinea los items arriba */
     padding: 10px;
-    gap: 8px;
-    overflow-y: auto;
-    background-color: rgba(0,0,0,0.02);
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    overflow-x: hidden; /* Oculta el desplazamiento horizontal */
+    flex-wrap: nowrap; /* Evita que los items se envuelvan horizontalmente */
 }
 
 .visualizador-item {
-    padding: 8px 12px;
+    padding: 5px 10px;
     border-radius: 8px;
     font-size: 0.9rem;
-    color: white;
+    color: var(--consola-borde);
     font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
     flex-shrink: 0;
 }
 
-.visualizador-item.armonia { background-color: var(--armonia-color); }
-.visualizador-item.melodia { background-color: var(--melodia-color); }
-.visualizador-item.ritmo { background-color: var(--ritmo-color); }
-.visualizador-item.fondo { background-color: var(--fondo-color); }
-.visualizador-item.adornos { background-color: var(--adornos-color); }
+.visualizador-item.armonia { background-color: var(--consola-fondo); }
+.visualizador-item.melodia { background-color: var(--consola-fondo); }
+.visualizador-item.ritmo { background-color: var(--consola-fondo); }
+.visualizador-item.fondo { background-color: var(--consola-fondo); }
+.visualizador-item.adornos { background-color: var(--consola-fondo); } 
 
 .visualizador-placeholder {
     margin: auto;
     color: #999;
     font-style: italic;
     font-size: 0.9rem;
+    display: flex; /* Asegura que la imagen dentro también se pueda centrar */
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
 }
 
+.visualizador-placeholder img {
+    max-width: 100%; /* La imagen se ajustará al ancho del contenedor */
+    max-height: 100%; /* La imagen se ajustará a la altura del contenedor */
+    object-fit: contain; /* Asegura que la imagen se ajuste sin recortarse */
+}
+
+
 .selectores-audios {
-    height: 100%;
-    flex: 1 1 auto;
+    flex: 1; /* Permite que tome el espacio restante verticalmente */
     display: flex;
     flex-direction: column;
     overflow-y: auto;
