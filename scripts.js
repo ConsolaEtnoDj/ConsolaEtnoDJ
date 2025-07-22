@@ -26,7 +26,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const response = await fetch(url);
         const text = await response.text();
         const lines = text.split('\n');
+        // Los encabezados están en la segunda línea (índice 1)
         const headers = lines[1].split(',').map(header => header.trim()); 
+        // Los datos comienzan desde la tercera línea (índice 2)
         const dataLines = lines.slice(2); 
 
         dataLines.forEach(line => {
@@ -36,11 +38,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 const title = values[1];
                 const region = values[3];
                 const department = values[4];
-                if (fileName && title && region && department) {
+                const author = values[5]; // Columna 6: Autor / Archivo
+                if (fileName && title && region && department && author) {
                     audioMetadata[fileName.trim().normalize('NFC')] = {
                         title: title.trim(),
                         region: region.trim(),
-                        department: department.trim()
+                        department: department.trim(),
+                        author: author.trim() // Guardar el autor
                     };
                 }
             }
@@ -116,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let displayText = '';
 
             if (metadata) {
-                displayText = `${metadata.title} - ${metadata.region} - Departamento: ${metadata.department}`;
+                displayText = `${metadata.title} - ${metadata.region} - Depto: ${metadata.department} (Autor: ${metadata.author})`;
             } else {
                 const nombreArchivoSinExtension = audioFileName.replace(/\.[^/.]+$/, "").replace(/_/g, ' ');
                 displayText = nombreArchivoSinExtension.charAt(0).toUpperCase() + nombreArchivoSinExtension.slice(1);
@@ -178,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const section = button.dataset.section;
             if (!section) return;
             const seccionId = section.replace('volumen-', '');
-            const debeSonar = seccionDebeSonar(seccionId);
+            const debeSonar = seccionDebeSonar(sectionId);
             button.classList.toggle('sonando', button.classList.contains('active') && debeSonar && !enPausa);
         });
     }
@@ -406,12 +410,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const nombre = metadata.title;
             const region = metadata.region;
             const depto = metadata.department;
-            contenidoFactura += `${contador}. ${nombre} - ${region} - Departamento: ${depto}\n`;
+            const autor = metadata.author;
+            contenidoFactura += `${contador}. ${nombre} - ${region} - Departamento: ${depto} (Autor/Archivo: ${autor})\n`;
             contador++;
         });
     
         contenidoFactura += `\n\nTotal: ${audiosUtilizadosEnGrabacion.size} audio(s)\n\n`;
-        contenidoFactura += `Gracias por usar ETNODJ!`;
+        contenidoFactura += `Gracias por usar ETNODJ!\n\n`;
+        contenidoFactura += `---------------------------------\n`;
+        contenidoFactura += `Licencia: (CC BY-NC-SA 4.0).\n`;
+        contenidoFactura += `Usted es libre de compartir y adaptar el material para fines no comerciales, siempre y cuando dé el crédito apropiado, proporcione un enlace a la licencia e indique si se han realizado cambios.`;
     
         const nombreArchivo = `factura_etnodj_${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}.txt`;
         const blob = new Blob([contenidoFactura], { type: 'text/plain;charset=utf-8' });
