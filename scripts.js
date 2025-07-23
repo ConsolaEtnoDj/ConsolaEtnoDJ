@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let displayText = '';
 
             if (metadata) {
-                displayText = `${metadata.title} - ${metadata.region} - Depto: ${metadata.department} (Autor: ${metadata.author})`;
+                displayText = `${metadata.title} - Región ${metadata.region} - Departamento: ${metadata.department} - Autor: ${metadata.author}.`;
             } else {
                 const nombreArchivoSinExtension = audioFileName.replace(/\.[^/.]+$/, "").replace(/_/g, ' ');
                 displayText = nombreArchivoSinExtension.charAt(0).toUpperCase() + nombreArchivoSinExtension.slice(1);
@@ -411,7 +411,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const region = metadata.region;
             const depto = metadata.department;
             const autor = metadata.author;
-            contenidoFactura += `${contador}. ${nombre} - ${region} - Departamento: ${depto} (Autor/Archivo: ${autor})\n`;
+            contenidoFactura += `${contador}. ${nombre} - Región ${region} - Departamento: ${depto} - Autor: ${autor})\n`;
             contador++;
         });
     
