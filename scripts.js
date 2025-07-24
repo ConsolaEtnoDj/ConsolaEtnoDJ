@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let displayText = '';
 
             if (metadata) {
-                displayText = `${metadata.title} - Región ${metadata.region} - Departamento: ${metadata.department} - Autor: ${metadata.author}.`;
+                displayText = `${metadata.title} - Región ${metadata.region} - Departamento: ${metadata.department}.`;
             } else {
                 const nombreArchivoSinExtension = audioFileName.replace(/\.[^/.]+$/, "").replace(/_/g, ' ');
                 displayText = nombreArchivoSinExtension.charAt(0).toUpperCase() + nombreArchivoSinExtension.slice(1);
@@ -411,12 +411,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const region = metadata.region;
             const depto = metadata.department;
             const autor = metadata.author;
-            contenidoFactura += `${contador}. ${nombre} - Región ${region} - Departamento: ${depto} - Autor: ${autor})\n`;
+            contenidoFactura += `${contador}. ${nombre} - Región ${region} - ${depto} - Autor: ${autor}\n`;
             contador++;
         });
     
         contenidoFactura += `\n\nTotal: ${audiosUtilizadosEnGrabacion.size} audio(s)\n\n`;
-        contenidoFactura += `Gracias por usar ETNODJ!\n\n`;
+        contenidoFactura += `¡Gracias por usar ETNODJ!\n\n`;
         contenidoFactura += `---------------------------------\n`;
         contenidoFactura += `Licencia: (CC BY-NC-SA 4.0).\n`;
         contenidoFactura += `Usted es libre de compartir y adaptar el material para fines no comerciales, siempre y cuando dé el crédito apropiado, proporcione un enlace a la licencia e indique si se han realizado cambios.`;
