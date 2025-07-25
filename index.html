@@ -9,162 +9,152 @@
 </head>
 <body>
     <div class="consola">
-        <div class="controles">
+        <div class="controles-superiores">
             <div class="control-panel">
-                <h2 class="titulo">Consola</h2>
-                <div class="control-actuadores">
-                    <div class="controles-reproduccion">
-                        <button id="encender"><i class="fa-solid fa-power-off"></i></button>
-                        <button id="detener"><i class="fa-solid fa-play"></i></button>
-                        <button id="grabar"><i class="fa-solid fa-circle"></i></button>
-                        <button id="descargar" disabled><i class="fa-solid fa-download"></i></button>
-                    </div>
-                    <div class="controles-ajustes">
-                        <div class="deslizador-item">
-                            <div class="deslizador-circular" id="volumen"></div>
-                            <h3 class="etiqueta">Volumen</h3>
-                        </div>
-                        <div class="entrada-item">
-                            <div class="tempo"><!-- área para el tempo --></div>
-                            <h3 class="etiqueta">Tempo</h3>
-                        </div>
-                    </div>   
+                <button id="encender"><i class="fa-solid fa-power-off"></i></button>
+                <button id="detener"><i class="fa-solid fa-play"></i></button>
+                <button id="grabar"><i class="fa-solid fa-circle"></i></button>
+                <button id="descargar" disabled><i class="fa-solid fa-download"></i></button>
+            </div> 
+            <div class="control-panel">
+                <div class="deslizador-item">
+                    <div class="deslizador-circular" id="volumen"></div>
+                    <h3 class="etiqueta">Volumen</h3>
                 </div>
-
+                    <div class="tempo-display">
+                    <span>120</span>
+                    <div class="tempo-circle"></div>
+                    </div>
+                <h3 class="etiqueta">Tempo</h3>
             </div>
-            
 
             <div class="control-audios">
+                <!-- Categoría Armonía -->
                 <div class="control-categoria" id="armonia">
                     <h2 class="titulo">Armonía</h2>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="tono-armonia"></div>
-                        <h3 class="etiqueta">Tono</h3>
-                    </div>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="volumen-armonia"></div>
+                    <div class="deslizador-item-vertical">
+                        <div class="deslizador-vertical-contenedor">
+                            <div class="deslizador-vertical-js" id="volumen-armonia"></div>
+                        </div>
                         <h3 class="etiqueta">Volumen</h3>
                     </div>
+                    <div class="botones-categoria">
+                        <button class="mute" id="mute-armonia"><i class="fa-solid fa-volume-high"></i></button>
+                        <button class="solo" id="solo-armonia">S</button>
+                    </div>
                 </div>
+                <!-- Categoría Melodía -->
                 <div class="control-categoria" id="melodia">
                     <h2 class="titulo">Melodía</h2>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="tono-melodia"></div>
-                        <h3 class="etiqueta">Tono</h3>
-                    </div>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="volumen-melodia"></div>
+                    <div class="deslizador-item-vertical">
+                         <div class="deslizador-vertical-contenedor">
+                            <div class="deslizador-vertical-js" id="volumen-melodia"></div>
+                        </div>
                         <h3 class="etiqueta">Volumen</h3>
                     </div>
+                     <div class="botones-categoria">
+                        <button class="mute" id="mute-melodia"><i class="fa-solid fa-volume-high"></i></button>
+                        <button class="solo" id="solo-melodia">S</button>
+                    </div>
                 </div>
+                <!-- Categoría Ritmo -->
                 <div class="control-categoria" id="ritmo">
                     <h2 class="titulo">Ritmo</h2>
-                    <div class="deslizador-item" >
-                        <div class="deslizador-circular" id="tono-ritmo"></div>
-                        <h3 class="etiqueta">Tono</h3>
-                    </div>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="volumen-ritmo"></div>
+                    <div class="deslizador-item-vertical" >
+                        <div class="deslizador-vertical-contenedor">
+                            <div class="deslizador-vertical-js" id="volumen-ritmo"></div>
+                        </div>
                         <h3 class="etiqueta">Volumen</h3>
                     </div>
+                     <div class="botones-categoria">
+                        <button class="mute" id="mute-ritmo"><i class="fa-solid fa-volume-high"></i></button>
+                        <button class="solo" id="solo-ritmo">S</button>
+                    </div>
                 </div>
+                <!-- Categoría Fondo -->
                 <div class="control-categoria" id="fondo">
                     <h2 class="titulo">Fondo</h2>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="tono-fondo"></div>
-                        <h3 class="etiqueta">Tono</h3>
-                    </div>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="volumen-fondo"></div>
+                    <div class="deslizador-item-vertical">
+                        <div class="deslizador-vertical-contenedor">
+                           <div class="deslizador-vertical-js" id="volumen-fondo"></div>
+                        </div>
                         <h3 class="etiqueta">Volumen</h3>
+                    </div>
+                     <div class="botones-categoria">
+                        <button class="mute" id="mute-fondo"><i class="fa-solid fa-volume-high"></i></button>
+                        <button class="solo" id="solo-fondo">S</button>
                     </div>
                 </div>
+                <!-- Categoría Adornos -->
                 <div class="control-categoria" id="adornos">
                     <h2 class="titulo">Adornos</h2>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="tono-adornos"></div>
-                        <h3 class="etiqueta">Tono</h3>
-                    </div>
-                    <div class="deslizador-item">
-                        <div class="deslizador-circular" id="volumen-adornos"></div>
+                    <div class="deslizador-item-vertical">
+                        <div class="deslizador-vertical-contenedor">
+                            <div class="deslizador-vertical-js" id="volumen-adornos"></div>
+                        </div>
                         <h3 class="etiqueta">Volumen</h3>
+                    </div>
+                     <div class="botones-categoria">
+                        <button class="mute" id="mute-adornos"><i class="fa-solid fa-volume-high"></i></button>
+                        <button class="solo" id="solo-adornos">S</button>
                     </div>
                 </div>
             </div>
-            <div class="visualizador">
-                <img src="Imagenes/etno-dj.png" alt="Visualizador EtnoDJ" style="max-width: 100%; max-height: 100%; border-radius: 12px;">
-            </div>            
+             <div class="visualizador">
+                <!-- La imagen transiciona y el contenido se generará con JS. -->
+            </div>
         </div>
 
         <div class="selectores-audios">
-            <div class="silencio-solo">
-                <div class="silencio">
-                    <button class="mute" id="mute-armonia"><i class="fa-solid fa-volume-high"></i></button>
-                    <button class="mute" id="mute-melodia"><i class="fa-solid fa-volume-high"></i></button>
-                    <button class="mute" id="mute-ritmo"><i class="fa-solid fa-volume-high"></i></button>
-                    <button class="mute" id="mute-fondo"><i class="fa-solid fa-volume-high"></i></button>
-                    <button class="mute" id="mute-adornos"><i class="fa-solid fa-volume-high"></i></button>
-
-                </div>
-                <div class="solos">
-                    <button class="solo" id="solo-armonia"><i class="fas fa-headphones-alt"></i></button>
-                    <button class="solo" id="solo-melodia"><i class="fas fa-headphones-alt"></i></button>
-                    <button class="solo" id="solo-ritmo"><i class="fas fa-headphones-alt"></i></button>
-                    <button class="solo" id="solo-fondo"><i class="fas fa-headphones-alt"></i></button>
-                    <button class="solo" id="solo-adornos"><i class="fas fa-headphones-alt"></i></button>
-
-                </div>
+            <div class="fila" data-section="volumen-armonia">
+                <button class="selector armonia" id="selector1" data-audio="Audios/Canto_Maguaré.mp3"></button>
+                <button class="selector armonia" id="selector2"  data-audio="Audios/Guitarra_bambuco.mp3"></button>
             </div>
-            <div class="audios">
-                <div class="fila" data-section="volumen-armonia"> <!-- Armonía -->
-                    <button class="selector armonia" id="selector1" data-audio="Audios/canto-maguaré.mp3"></button>
-                    <button class="selector armonia" id="selector2"  data-audio=""></button>
-                </div>
-                <div class="fila" data-section="volumen-melodia"><!-- Melodía -->
-                    <button class="selector melodia" id="selector3" data-audio="Audios/canto-a-yoi.mp3"></button>
-                    <button class="selector melodia" id="selector4" data-audio="Audios/musica_pueblo_arhuaco.mp3"></button>
-                    <button class="selector melodia" id="selector5" data-audio="Audios/pasillo_transmilenio.mp3"></button>
-                    <button class="selector melodia" id="selector6" data-audio="Audios/musica_joropo_arpa.mp3"></button>
-                </div>
-                <div class="fila" data-section="volumen-ritmo"><!-- Ritmo -->
-                    <button class="selector ritmo" id="selector7" data-audio="Audios/porro-tambor-alegre.mp3"></button>
-                    <button class="selector ritmo" id="selector8" data-audio="Audios/secar-cacao.mp3"></button>
-                    <button class="selector ritmo" id="selector9" data-audio="Audios/marimba-2.mp3"></button>
-                    <button class="selector ritmo" id="selector10" data-audio="Audios/cacerolazo.mp3"></button>
-                </div>
-                <div class="fila" data-section="volumen-fondo"><!-- Fondo -->
-                    <button class="selector fondo" id="selector11" data-audio="Audios/llovizna-noche-selva.mp3"></button>
-                    <button class="selector fondo" id="selector12" data-audio="Audios/rio-loretoyacu.mp3"></button>
-                    <button class="selector fondo" id="selector13" data-audio="Audios/gol-del-junior.mp3"></button>
-                    <button class="selector fondo" id="selector14" data-audio="Audios/ppn-sanquianga.mp3"></button>
-                    <button class="selector fondo" id="selector15" data-audio="Audios/trapiche-de-cana.mp3"></button>
-                    <button class="selector fondo" id="selector16" data-audio="Audios/canon_gaviotas_agua_dos_quebradas.mp3"></button>
-                    <button class="selector fondo" id="selector17" data-audio="Audios/peque-peque.mp3"></button>
-                    <button class="selector fondo" id="selector18" data-audio=""></button>
-                </div>
-                <div class="fila" data-section="volumen-adornos"><!-- Adornos -->
-                    <button class="selector adornos" id="selector19" data-audio="Audios/me-falta-mi-gente.mp3"></button>
-                    <button class="selector adornos" id="selector20" data-audio="Audios/meneando-mijo.mp3"></button>
-                    <button class="selector adornos" id="selector21" data-audio="Audios/panochas.mp3"></button>
-                    <button class="selector adornos" id="selector22" data-audio="Audios/Gallo.mp3"></button>
-                    <button class="selector adornos" id="selector23" data-audio="Audios/20-julio_A la orden veci.mp3"></button>
-                    <button class="selector adornos" id="selector24" data-audio="Audios/20-julio_Buzo, gorra, mallas.mp3"></button>
-                    <button class="selector adornos" id="selector25" data-audio="Audios/20-julio_Medias.mp3"></button>
-                    <button class="selector adornos" id="selector26" data-audio="Audios/20-julio_A_trescientos.mp3"></button>
-                    <button class="selector adornos" id="selector27" data-audio="Audios/20-julio_Por este ladito.mp3"></button>
-                    <button class="selector adornos" id="selector28" data-audio="Audios/20-julio_Bienvenidos sigan.mp3"></button>
-                    <button class="selector adornos" id="selector29" data-audio="Audios/paro-nac_Arengas.mp3"></button>
-                    <button class="selector adornos" id="selector30" data-audio="Audios/paro-nac_Pito y tambores.mp3"></button>
-                    <button class="selector adornos" id="selector31" data-audio="Audios/paro-nac_Por nuestros muertos.mp3"></button>
-                    <button class="selector adornos" id="selector32" data-audio="Audios/musica_arpa_2.mp3"></button>
-                    <button class="selector adornos" id="selector33" data-audio="Audios/putumayo_sonido_pajaro.mp3"></button>
-                    <button class="selector adornos" id="selector34" data-audio="Audios/Prestame-el-rompope.mp3"></button>
-                </div>
+            <div class="fila" data-section="volumen-melodia">
+                <button class="selector melodia" id="selector3" data-audio="Audios/Canto_a_Yoi.mp3"></button>
+                <button class="selector melodia" id="selector4" data-audio="Audios/Me_falta_mi_gente.mp3"></button>
+                <button class="selector melodia" id="selector5" data-audio="Audios/Arpa_2.mp3"></button>
+                <button class="selector melodia" id="selector6" data-audio="Audios/Cancion_Archipielagos.mp3"></button>
+            </div>
+            <div class="fila" data-section="volumen-ritmo">
+                <button class="selector ritmo" id="selector7" data-audio="Audios/Ritmo_de_Porro_en_alegre.mp3"></button>
+                <button class="selector ritmo" id="selector8" data-audio="Audios/Musica_pueblo_Arhuaco.mp3"></button>
+                <button class="selector ritmo" id="selector9" data-audio="Audios/Marimba_currulao_2.mp3"></button>
+                <button class="selector ritmo" id="selector10" data-audio="Audios/Cacerolazo.mp3"></button>
+            </div>
+            <div class="fila" data-section="volumen-fondo">
+                <button class="selector fondo" id="selector11" data-audio="Audios/Llovizna_en_la_selva.mp3"></button>
+                <button class="selector fondo" id="selector12" data-audio="Audios/Musica_Insular.mp3"></button>
+                <button class="selector fondo" id="selector13" data-audio="Audios/Gol_del_junior.mp3"></button>
+                <button class="selector fondo" id="selector14" data-audio="Audios/Aves_del_PNN_Sanquianga.mp3"></button>
+                <button class="selector fondo" id="selector15" data-audio="Audios/Trapiche_de_Caña_de_Azúcar.mp3"></button>
+                <button class="selector fondo" id="selector16" data-audio="Audios/Agua_dos_quebradas.mp3"></button>
+                <button class="selector fondo" id="selector17" data-audio="Audios/Mar_Palomino.mp3"></button>
+                <button class="selector fondo" id="selector18" data-audio="Audios/Criolle_Paradise.mp3"></button>
+            </div>
+            <div class="fila" data-section="volumen-adornos">
+                <button class="selector adornos" id="selector19" data-audio="Audios/Secar_cacao.mp3"></button>
+                <button class="selector adornos" id="selector20" data-audio="Audios/Y_yo_voy_meneando_mijo.mp3"></button>
+                <button class="selector adornos" id="selector21" data-audio="Audios/Panochas.mp3"></button>
+                <button class="selector adornos" id="selector22" data-audio="Audios/Gallo_bankiva.mp3"></button>
+                <button class="selector adornos" id="selector23" data-audio="Audios/Buzo,_gorra,_mallas.mp3"></button>
+                <button class="selector adornos" id="selector24" data-audio="Audios/A_trescientos.mp3"></button>
+                <button class="selector adornos" id="selector25" data-audio="Audios/Criolle_Message.mp3"></button>
+                <button class="selector adornos" id="selector26" data-audio="Audios/Arengas_Paro_Nacional.mp3"></button>
+                <button class="selector adornos" id="selector27" data-audio="Audios/Prestame_el_Rompope.mp3"></button>
+                <button class="selector adornos" id="selector28" data-audio="Audios/Bullerengue_Llorando.mp3"></button>
+                <button class="selector adornos" id="selector29" data-audio="Audios/Por_nuestros_muertos.mp3"></button>
+                <button class="selector adornos" id="selector30" data-audio="Audios/Canto_Sikuani.mp3"></button>
+                <button class="selector adornos" id="selector31" data-audio="Audios/Criolle_My_Music.mp3"></button>
+                <button class="selector adornos" id="selector32" data-audio="Audios/Peque_peque.mp3"></button>
+                <button class="selector adornos" id="selector33" data-audio="Audios/Vas_a_la_Plaza.mp3"></button>
+                <button class="selector adornos" id="selector34" data-audio="Audios/Mazamorra.mp3"></button>
             </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/audiobuffer-to-wav@1.0.0/index.min.js"></script>
-    <script src="scripts.js"></script>
     <script src="deslizador-circular.js"></script>
+    <script src="deslizador-vertical.js"></script>
+    <script src="scripts.js"></script>
 </body>
 </html>

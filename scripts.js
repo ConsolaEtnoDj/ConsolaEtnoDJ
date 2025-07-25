@@ -1,29 +1,169 @@
 document.addEventListener('DOMContentLoaded', function() {
+    const tooltip = document.createElement('div');
+    tooltip.id = 'audio-tooltip';
+    document.body.appendChild(tooltip);
+
     const botonesAudio = document.querySelectorAll('.selector');
     const contextoAudio = new (window.AudioContext || window.webkitAudioContext)();
     const masterGainNode = contextoAudio.createGain();
-    masterGainNode.gain.setValueAtTime(1, contextoAudio.currentTime); // Volumen general al 100% inicialmente
     masterGainNode.connect(contextoAudio.destination);
+    
+    const visualizador = document.querySelector('.visualizador');
 
     const fuentesAudio = {};
     const volumenesOriginales = {};
-    let consolaEncendida = false; // Indica si la consola esta encendida o apagada
-    let enPausa = false; // Indica si la consola esta en pausa cuando activo y en reproducción cuando no
+    let consolaEncendida = false;
+    let enPausa = false;
+
+    // Objeto para almacenar la información de los audios del CSV
+    const audioMetadata = {};
+
+    // Mapa para almacenar los audios únicos utilizados durante la grabación para la factura
+    let audiosUtilizadosEnGrabacion = new Map();
+
+    // --- INICIO: Carga y parseo del CSV ---
+    async function parseCSV(url) {
+        const response = await fetch(url);
+        const text = await response.text();
+        const lines = text.split('\n');
+        // Los encabezados están en la segunda línea (índice 1)
+        const headers = lines[1].split(',').map(header => header.trim()); 
+        // Los datos comienzan desde la tercera línea (índice 2)
+        const dataLines = lines.slice(2); 
+
+        dataLines.forEach(line => {
+            const values = parseCSVLine(line);
+            if (values.length > 1) {
+                const fileName = values[0];
+                const title = values[1];
+                const region = values[3];
+                const department = values[4];
+                const author = values[5]; // Columna 6: Autor / Archivo
+                if (fileName && title && region && department && author) {
+                    audioMetadata[fileName.trim().normalize('NFC')] = {
+                        title: title.trim(),
+                        region: region.trim(),
+                        department: department.trim(),
+                        author: author.trim() // Guardar el autor
+                    };
+                }
+            }
+        });
+    }
+
+    function parseCSVLine(line) {
+        const result = [];
+        let inQuote = false;
+        let currentField = '';
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                inQuote = !inQuote;
+            } else if (char === ',' && !inQuote) {
+                result.push(currentField);
+                currentField = '';
+            } else {
+                currentField += char;
+            }
+        }
+        result.push(currentField);
+        return result;
+    }
+
+    parseCSV('Consola.csv').then(() => {
+        console.log('Metadatos de audio cargados:', audioMetadata);
+        inicializarBotonesAudio();
+        actualizarVisualizador(); 
+    }).catch(error => {
+        console.error('Error al cargar o parsear el CSV:', error);
+    });
+    // --- FIN: Carga y parseo del CSV ---
+
+    // --- INICIO: Inicialización de componentes ---
+    new DeslizadorCircular(document.getElementById('volumen'), { value: 50, id: 'volumen' });
+
+    document.querySelectorAll('.deslizador-vertical-js').forEach(container => {
+        const id = container.id;
+        new DeslizadorVertical(container, { id: id, value: 50 });
+        volumenesOriginales[id] = 0.5;
+    });
+    // --- FIN: Inicialización de componentes ---
+
+    function actualizarVisualizador() {
+        while (visualizador.firstChild) {
+            visualizador.removeChild(visualizador.firstChild);
+        }
+
+        const audiosSeleccionados = document.querySelectorAll('.selector.active');
+        
+        if (audiosSeleccionados.length === 0) {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'visualizador-placeholder';
+            
+            const img = document.createElement('img');
+            img.src = 'Imagenes/etno-dj.png';
+            img.alt = 'Visualizador EtnoDJ';
+            img.style.maxWidth = '80%';
+            img.style.maxHeight = '80%';
+            img.style.borderRadius = '12px';
+            img.style.margin = 'auto';
+            img.style.opacity = '0.5';
+            placeholder.appendChild(img);
+            visualizador.appendChild(placeholder);
+            return;
+        }
+
+        const categorias = ['armonia', 'melodia', 'ritmo', 'fondo', 'adornos'];
+        audiosSeleccionados.forEach(boton => {
+            const audioFileName = boton.getAttribute('data-audio').split('/').pop().normalize('NFC');
+            const metadata = audioMetadata[audioFileName];
+            let displayText = '';
+
+            if (metadata) {
+                displayText = `${metadata.title} - Región ${metadata.region} - Departamento: ${metadata.department}.`;
+            } else {
+                const nombreArchivoSinExtension = audioFileName.replace(/\.[^/.]+$/, "").replace(/_/g, ' ');
+                displayText = nombreArchivoSinExtension.charAt(0).toUpperCase() + nombreArchivoSinExtension.slice(1);
+            }
+
+            const itemAudio = document.createElement('div');
+            itemAudio.className = 'visualizador-item';
+            itemAudio.textContent = displayText;
+            
+            let categoriaEncontrada = '';
+            for (const cat of categorias) {
+                if (boton.classList.contains(cat)) {
+                    categoriaEncontrada = cat;
+                    break;
+                }
+            }
+            if (categoriaEncontrada) {
+                itemAudio.classList.add(categoriaEncontrada);
+            }
+
+            visualizador.appendChild(itemAudio);
+        });
+    }
 
     function cargarAudio(url) {
+        if (!url) return Promise.resolve(null);
         return fetch(url)
-            .then(response => response.arrayBuffer())
-            .then(buffer => contextoAudio.decodeAudioData(buffer));
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.arrayBuffer();
+            })
+            .then(buffer => contextoAudio.decodeAudioData(buffer))
+            .catch(e => console.error(`Error al cargar audio: ${url}`, e));
     }
 
     function reproducirAudio(audioBuffer) {
         const source = contextoAudio.createBufferSource();
         source.buffer = audioBuffer;
         source.loop = true;
-        const gainNode = contextoAudio.createGain(); // Control de volumen
-        source.connect(gainNode).connect(masterGainNode); // Conectar al masterGainNode 
+        const gainNode = contextoAudio.createGain();
+        source.connect(gainNode).connect(masterGainNode);
         source.start();
-        return { source, gainNode }; // Devolvemos source y gainNode
+        return { source, gainNode };
     }
 
     function seccionDebeSonar(sectionId) {
@@ -32,447 +172,302 @@ document.addEventListener('DOMContentLoaded', function() {
         const haySoloActivo = Array.from(document.querySelectorAll('.solo')).some(b => b.classList.contains('activo'));
         const estaEnSolo = soloBtn && soloBtn.classList.contains('activo');
         const estaMuteada = muteBtn && muteBtn.classList.contains('activo');
-
-        if (estaMuteada) {
-            return false; // Si está muteado, nunca debe sonar
-        }
-        if (haySoloActivo) {
-            return estaEnSolo; // Si hay algún solo activo, solo deben sonar los que están en solo
-        }
-        return true; // Si no hay solo activo y no está muteado, debe sonar
+        if (estaMuteada) return false;
+        if (haySoloActivo) return estaEnSolo;
+        return true;
     }
 
     function actualizarBotonesDeAudios() {
         botonesAudio.forEach(button => {
             const section = button.dataset.section;
             if (!section) return;
-            
             const seccionId = section.replace('volumen-', '');
-            const muteBtn = document.getElementById(`mute-${seccionId}`);
-            const soloBtn = document.getElementById(`solo-${seccionId}`);
-            const haySoloActivo = Array.from(document.querySelectorAll('.solo')).some(b => b.classList.contains('activo'));
-            const estaMuteada = muteBtn && muteBtn.classList.contains('activo');
-            const estaEnSolo = soloBtn && soloBtn.classList.contains('activo');
-    
-            let debeSonar = false;
-            if (estaMuteada) {
-                debeSonar = false;
-            } else if (haySoloActivo) {
-                debeSonar = estaEnSolo;
-            } else {
-                debeSonar = true;
-            }
-    
-            if (button.classList.contains('active') && debeSonar) {
-                button.classList.add('sonando');
-            } else {
-                button.classList.remove('sonando');
-            }
+            const debeSonar = seccionDebeSonar(sectionId);
+            button.classList.toggle('sonando', button.classList.contains('active') && debeSonar && !enPausa);
         });
-    }    
-
-    function actualizarColorBoton(button){
-        // Opacidad completa cuando está activo sino 50% de opacidad
-        button.style.opacity = button.classList.contains('active') ? "1" : "0.5";
     }
 
-    // Botones selectores de audio
-    botonesAudio.forEach((button) => {
-        button.dataset.active = 'false';
-        const audioUrl = button.getAttribute('data-audio');
-        const sectionId = button.closest('.fila').dataset.section;
-        button.setAttribute('data-section', sectionId);
-        button.style.opacity = "0.5"; // Iniciar todos con opacidad al 50%
-    
-        cargarAudio(audioUrl).then(audioBuffer => {
-            fuentesAudio[button.id] = {
-                buffer: audioBuffer,
-                source: null,
-                gainNode: null // Inicialmente null
-            };
-    
-            button.addEventListener('click', function() {
-                if (!consolaEncendida) return; // Si la consola está apagada, no hacer nada
-    
-                if (this.classList.contains('active')) {
-                    this.classList.remove('active');
-                    this.dataset.active = 'false';
-                    if (fuentesAudio[this.id].source) {
-                        fuentesAudio[this.id].source.stop();
-                        fuentesAudio[this.id].source = null;
-                    }
-                } else {
-                    const section = this.dataset.section;
-                    const seccionId = section.replace('volumen-', '');
-                    const volumenOriginal = volumenesOriginales[section] ?? 0.5;
-                    const debeSonar = seccionDebeSonar(seccionId);
+    function inicializarBotonesAudio() {
+        botonesAudio.forEach((button) => {
+            button.dataset.active = 'false';
+            const audioUrl = button.getAttribute('data-audio');
+            const sectionId = button.closest('.fila').dataset.section;
+            button.setAttribute('data-section', sectionId);
+            
+            if (audioUrl) {
+                const audioFileName = audioUrl.split('/').pop().normalize('NFC');
+                const metadata = audioMetadata[audioFileName];
+                let tooltipText = metadata ? metadata.title : audioFileName.replace(/\.[^/.]+$/, "").replace(/_/g, ' ');
+                button.setAttribute('data-tooltip', tooltipText);
+            }
 
-                    const source = contextoAudio.createBufferSource();
-                    source.buffer = fuentesAudio[this.id].buffer;
-                    source.loop = true;
-
-                    const gainNode = contextoAudio.createGain();
-
-                    if (enPausa) {
-                        // Iniciar en silencio y luego aplicar volumen si se puede
-                        gainNode.gain.setValueAtTime(0, contextoAudio.currentTime);
-                    } else {
-                        gainNode.gain.setValueAtTime(debeSonar ? volumenOriginal : 0, contextoAudio.currentTime);
-                    }
-                    
-                    // Luego conectamos
-                    source.connect(gainNode).connect(masterGainNode);
-                    source.start();
-
-                    fuentesAudio[this.id].source = source;
-                    fuentesAudio[this.id].gainNode = gainNode;
-                    fuentesAudio[this.id].debeSonar = debeSonar;
-
-                    if (grabando) {
-                        gainNode.connect(mediaStreamDestinoGlobal);
-                        const nombre = this.getAttribute('data-audio').split('/').pop();
-                        audiosEnGrabacion.push(nombre);
-                    }
-
-                    this.classList.add('active');
-                    this.dataset.active = 'true';
+            button.addEventListener('mouseenter', () => {
+                if (!consolaEncendida) return;
+                const tooltipText = button.getAttribute('data-tooltip');
+                if (tooltipText) {
+                    tooltip.textContent = tooltipText;
+                    tooltip.classList.add('visible');
+                    const btnRect = button.getBoundingClientRect();
+                    const left = btnRect.left + (btnRect.width / 2);
+                    const top = btnRect.top + (btnRect.height / 2);
+                    tooltip.style.left = `${left}px`;
+                    tooltip.style.top = `${top}px`;
                 }
-                actualizarColorBoton(this);
-                actualizarBotonesDeAudios();
+            });
+
+            button.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('visible');
+            });
+
+            cargarAudio(audioUrl).then(audioBuffer => {
+                if (!audioBuffer) return;
+                fuentesAudio[button.id] = { buffer: audioBuffer, source: null, gainNode: null };
+
+                button.addEventListener('click', function() {
+                    if (!consolaEncendida) return;
+                    this.classList.toggle('active');
+                    actualizarVisualizador();
+                    
+                    const isActive = this.classList.contains('active');
+                    if (isActive) {
+                        const { source, gainNode } = reproducirAudio(fuentesAudio[this.id].buffer);
+                        fuentesAudio[this.id] = { ...fuentesAudio[this.id], source, gainNode };
+                        const seccionId = this.dataset.section.replace('volumen-', '');
+                        const volumenOriginal = volumenesOriginales[this.dataset.section] ?? 0.5;
+                        const debeSonar = seccionDebeSonar(seccionId);
+                        gainNode.gain.setValueAtTime(debeSonar && !enPausa ? volumenOriginal : 0, contextoAudio.currentTime);
+                        
+                        if (grabando) {
+                            const audioFileName = this.getAttribute('data-audio').split('/').pop().normalize('NFC');
+                            const metadata = audioMetadata[audioFileName];
+                            if (metadata) {
+                                audiosUtilizadosEnGrabacion.set(audioFileName, metadata);
+                            }
+                        }
+
+                    } else {
+                        if (fuentesAudio[this.id].source) {
+                            fuentesAudio[this.id].source.stop();
+                            fuentesAudio[this.id].source = null;
+                            fuentesAudio[this.id].gainNode = null;
+                        }
+                    }
+                    actualizarBotonesDeAudios();
+                });
             });
         });
-    });
+        actualizarVisualizador();
+    }
     
-    // Evento para ajustar el volumen basado en el deslizador
     document.addEventListener('valuechange', (event) => {
         const { id, value } = event.detail;
         const gainValue = value / 100;
+        if (!isFinite(gainValue)) return;
 
-        if (!isFinite(gainValue)) return; // Verificar si gainValue es finito
-
-        if (id === 'volumen') { 
-            // Si es el control de volumen global
+        if (id === 'volumen') {
             masterGainNode.gain.setValueAtTime(gainValue, contextoAudio.currentTime);
-        } else {
-            // Volúmenes de las secciones individuales
+        } else if (id.startsWith('volumen-')) {
             volumenesOriginales[id] = gainValue;
-
             Object.keys(fuentesAudio).forEach(key => {
                 const btn = document.getElementById(key);
-                if (!btn) return;
-                if (btn.dataset.section === id) {
-                    const fuente = fuentesAudio[key];
-                    if (fuente.gainNode) {
-                        const seccionId = id.replace('volumen-', '');
-                        const debeSonar = seccionDebeSonar(seccionId);
+                if (!btn || btn.dataset.section !== id) return; 
+                
+                const fuente = fuentesAudio[key];
+                if (fuente.gainNode) {
+                    const seccionId = id.replace('volumen-', '');
+                    const debeSonar = seccionDebeSonar(seccionId);
+                    if (!enPausa) {
                         fuente.gainNode.gain.setValueAtTime(debeSonar ? gainValue : 0, contextoAudio.currentTime);
                     }
                 }
             });
-        }        
+        }
     });
 
-    // Función para actualizar el estado de los audios deacuerdo a los botones de silencio y solo
     function actualizarEstadoAudio() {
-        const botonesSolo = document.querySelectorAll('.solo');
-        const seccionesActivas = Array.from(botonesSolo).filter(btn => btn.classList.contains('activo')).map(btn => btn.id.replace('solo-', ''));
-        
-        botonesAudio.forEach(button => {
-            if (!button.classList.contains('active')) return; // Solo actualizar los botones activos
-
-            const section = button.dataset.section;
-            const seccionId = section.replace('volumen-', '');
-            const muteBtn = document.getElementById(`mute-${seccionId}`);
-            const soloBtn = document.getElementById(`solo-${seccionId}`);
-            const estaMuteada = muteBtn && muteBtn.classList.contains('activo');
-            const estaEnSolo = soloBtn && soloBtn.classList.contains('activo');
-            const haySoloActivo = seccionesActivas.length > 0;
-
-            let debeSonar = false;
-            if (estaMuteada) {
-                debeSonar = false;
-            } else if (haySoloActivo) {
-                debeSonar = estaEnSolo;
-            } else {   
-                debeSonar = true;
+        Object.keys(fuentesAudio).forEach(key => {
+            const fuente = fuentesAudio[key];
+            const btn = document.getElementById(key);
+            if(fuente.gainNode && btn){
+                 const seccionId = btn.dataset.section.replace('volumen-', '');
+                 const debeSonar = seccionDebeSonar(seccionId);
+                 const gainValue = volumenesOriginales[btn.dataset.section] ?? 0.5;
+                 if(!enPausa){
+                    fuente.gainNode.gain.setValueAtTime(debeSonar ? gainValue : 0, contextoAudio.currentTime);
+                 }
             }
-
-            const fuente = fuentesAudio[button.id];
-            const volumenOriginal = volumenesOriginales[section] ?? 0.5;
-
-            if (fuente && fuente.gainNode) {
-                if (!enPausa) {
-                    fuente.gainNode.gain.setValueAtTime(debeSonar ? volumenOriginal : 0, contextoAudio.currentTime);
-                } 
-            }
-            fuente.debeSonar = debeSonar; // Guardar el estado de si debe sonar o no
-           
-            actualizarColorBoton(button);
         });
         actualizarBotonesDeAudios();
     }
-   
+
     const botonEncender = document.getElementById('encender');
     const botonDetener = document.getElementById('detener');
     const botonGrabar = document.getElementById('grabar');
     const botonDescargar = document.getElementById('descargar');
-    
-    // Inicializar color del icono en rojo
-    botonEncender.querySelector('i').style.color = 'red';
-     // Funcionalidad al botón encender
+
     botonEncender.addEventListener('click', function() {
         consolaEncendida = !consolaEncendida;
+        this.classList.toggle('activo');
         if (consolaEncendida) {
-            botonEncender.classList.add('activo');
-            botonEncender.querySelector('i').style.color = 'black';
-            botonDetener.querySelector('i').classList.remove('fa-play');
-            botonDetener.querySelector('i').classList.add('fa-pause');
-            enPausa = false; // Asegurarse que no quede en pausa
-
+            contextoAudio.resume();
+            enPausa = false;
         } else {
-            botonEncender.classList.remove('activo');
-            botonEncender.querySelector('i').style.color = 'red';
-            botonDetener.querySelector('i').classList.remove('fa-pause');
-            botonDetener.querySelector('i').classList.add('fa-play');
-            enPausa = true; // Para evitar que se puedan activar sonidos por accidente
-
-            // Detener todos los audios si la consola se apaga
-            Object.keys(fuentesAudio).forEach(key => {
-                if (fuentesAudio[key].source) {
-                    fuentesAudio[key].source.stop();
-                    fuentesAudio[key].source = null;
+            Object.values(fuentesAudio).forEach(fuente => {
+                if (fuente.source) {
+                    fuente.source.stop();
+                    fuente.source = null;
                 }
             });
-
-            // Desactivar todos los botones de audio, silencio y solo
-            botonesAudio.forEach(button => {
-                button.classList.remove('active','sonando');
-                button.dataset.active = 'false';
-                actualizarColorBoton(button);
-            });
-            botonesSilencio.forEach(button => {
-                button.classList.remove('activo');
-                const icono = button.querySelector('i');
-                icono.classList.remove('fa-volume-xmark');
-                icono.classList.add('fa-volume-high');
-            });
-            botonesSolo.forEach(button => {
-                button.classList.remove('activo');
-            });
-
-            // Bajar el volumen general al 50%
-            masterGainNode.gain.setValueAtTime(0.5, contextoAudio.currentTime);
-
-            // Establecer todos los controles de volumen al 50% visual y funcional
-            ['volumen-armonia', 'volumen-melodia', 'volumen-ritmo', 'volumen-fondo', 'volumen-adornos'].forEach(id => {
-                const evento = new CustomEvent('valuechange', {
-                    detail: {id: id, value: 50
-                    }
-                });
-                document.dispatchEvent(evento);
-                const deslizador = document.getElementById(id);
-                if (deslizador && deslizador.__deslizadorCircular__) {
-                    deslizador.__deslizadorCircular__.valor = 50;
-                    deslizador.__deslizadorCircular__.dibujar();
+             document.querySelectorAll('.selector, .mute, .solo').forEach(b => b.classList.remove('active', 'sonando', 'activo'));
+             
+             document.querySelectorAll('.deslizador-vertical-js').forEach(container => {
+                if (container.__deslizadorVertical__) {
+                    container.__deslizadorVertical__.valor = 50;
+                    container.__deslizadorVertical__.dibujar();
                 }
-            });
-
-            // Ectualizar el deslizador general 
-            const deslizadorGeneral = document.getElementById('volumen');
-            if (deslizadorGeneral && deslizadorGeneral.__deslizadorCircular__) {
-                deslizadorGeneral.__deslizadorCircular__.valor = 50; 
-                deslizadorGeneral.__deslizadorCircular__.dibujar();
-            }
+             });
+             const volGeneral = document.getElementById('volumen').__deslizadorCircular__;
+             if(volGeneral) {
+                volGeneral.valor = 50;
+                volGeneral.dibujar();
+                volGeneral.emitirCambioValor();
+             }
+            grabando = false;
+            audiosUtilizadosEnGrabacion.clear();
+            botonGrabar.classList.remove('activo');
+            botonDescargar.disabled = true;
         }
+        botonDetener.querySelector('i').className = `fa-solid ${consolaEncendida && !enPausa ? 'fa-pause' : 'fa-play'}`;
+        actualizarBotonesDeAudios();
+        actualizarVisualizador();
     });
 
     botonDetener.addEventListener('click', () => {
         if (!consolaEncendida) return;
         enPausa = !enPausa;
+        Object.values(fuentesAudio).forEach(fuente => {
+            if (fuente.gainNode) {
+                const btn = Object.keys(fuentesAudio).find(key => fuentesAudio[key] === fuente);
+                const seccionId = document.getElementById(btn).dataset.section.replace('volumen-', '');
+                const debeSonar = seccionDebeSonar(seccionId);
+                const gainValue = volumenesOriginales[document.getElementById(btn).dataset.section] ?? 0.5;
+                fuente.gainNode.gain.setValueAtTime(enPausa || !debeSonar ? 0 : gainValue, contextoAudio.currentTime);
+            }
+        });
+        botonDetener.querySelector('i').className = `fa-solid ${enPausa ? 'fa-play' : 'fa-pause'}`;
+        actualizarBotonesDeAudios();
+    });
 
-        if (enPausa) {
-            // Pausar todos los audios activos
-            Object.keys(fuentesAudio).forEach(key => {
-                const fuente = fuentesAudio[key];
-                if (fuente.source) {
-                    fuente.source.stop(); // Stop actual
-                    fuente.source = null;
-                }
-                if (fuente.gainNode) {
-                    fuente.gainNode.gain.setValueAtTime(0, contextoAudio.currentTime);
-                }
-            });
-    
-            // Cambiar ícono a "play"
-            botonDetener.querySelector('i').classList.remove('fa-pause');
-            botonDetener.querySelector('i').classList.add('fa-play');
-
-        } else {
-            // Reanudar todos los audios que estaban activos
-            botonesAudio.forEach(button => {
-                if (button.classList.contains('active')) {
-                    const fuente = fuentesAudio[button.id];
-                    const section = button.dataset.section;
-                    const volumenOriginal = volumenesOriginales[section] ?? 0.5;
-
-                    const buffer = fuente.buffer;
-                    const { source, gainNode } = reproducirAudio(buffer);
-                    fuente.source = source;
-                    fuente.gainNode = gainNode;
-
-                    const debeSonar = fuente.debeSonar ?? true;
-
-                    gainNode.connect(masterGainNode);
-                    gainNode.gain.setValueAtTime(debeSonar ? volumenOriginal : 0, contextoAudio.currentTime);
-
-                    if (grabando) {
-                        gainNode.connect(mediaStreamDestinoGlobal);
-                    }
-                }
-            });
-    
-            // Cambiar ícono a "pausa"
-            botonDetener.querySelector('i').classList.remove('fa-play');
-            botonDetener.querySelector('i').classList.add('fa-pause');
-        }
-    });    
-
-    // Inicializar el botón de grabación y descarga
-    let mediaRecorder;
-    let grabando = false;
-    let chunks = [];
-    let audiosEnGrabacion = [];
-    let grabacionBlob = null;
-
-
-    // Crear destino de grabación global
+    let mediaRecorder, grabando = false, chunks = [], grabacionBlob = null;
     const mediaStreamDestinoGlobal = contextoAudio.createMediaStreamDestination();
 
     botonGrabar.addEventListener('click', () => {
         if (!consolaEncendida) return;
-
-        if (!grabando) {
+        grabando = !grabando;
+        botonGrabar.classList.toggle('activo', grabando);
+        if (grabando) {
             chunks = [];
-            audiosEnGrabacion = [];
-            // Registrar todos los audios activos desde el inicio
-            botonesAudio.forEach(button => {
-                if (button.classList.contains('active')) {
-                    const section = button.dataset.section;
-                    const seccionId = section.replace('volumen-', '');
-                    const debeSonar = seccionDebeSonar(seccionId);
-                    const fuente = fuentesAudio[button.id];
+            audiosUtilizadosEnGrabacion.clear();
 
-                    if (debeSonar && fuente && fuente.gainNode) {
-                        fuente.gainNode.connect(mediaStreamDestinoGlobal);
-                    }
-
-                    // Añadir el nombre del audio a la factura
-                    const nombre = button.getAttribute('data-audio').split('/').pop();
-                    if (nombre && !audiosEnGrabacion.includes(nombre)) {
-                        audiosEnGrabacion.push(nombre);
-                    }
+            document.querySelectorAll('.selector.active').forEach(button => {
+                const audioFileName = button.getAttribute('data-audio').split('/').pop().normalize('NFC');
+                const metadata = audioMetadata[audioFileName];
+                if (metadata) {
+                    audiosUtilizadosEnGrabacion.set(audioFileName, metadata);
                 }
             });
 
+            masterGainNode.connect(mediaStreamDestinoGlobal);
             mediaRecorder = new MediaRecorder(mediaStreamDestinoGlobal.stream);
             mediaRecorder.ondataavailable = e => chunks.push(e.data);
             mediaRecorder.onstop = () => {
                 grabacionBlob = new Blob(chunks, { type: 'audio/webm' });
                 botonDescargar.disabled = false;
+                masterGainNode.disconnect(mediaStreamDestinoGlobal);
             };
-
             mediaRecorder.start();
-            grabando = true;
-            botonGrabar.classList.add('activo');
-            botonGrabar.querySelector('i').style.color = 'red';
-
         } else {
             mediaRecorder.stop();
-            grabando = false;
-            botonGrabar.classList.remove('activo');
-            botonGrabar.querySelector('i').style.color = 'black';
         }
     });
 
-    botonDescargar.addEventListener('click', async () => {
-        if (!grabacionBlob) {
-            alert("No hay grabación disponible para descargar.");
+    function crearYDescargarFactura() {
+        if (audiosUtilizadosEnGrabacion.size === 0) {
+            console.log("No se utilizaron audios en la grabación. No se genera factura.");
             return;
         }
     
-        const arrayBuffer = await grabacionBlob.arrayBuffer();
-        const audioBuffer = await contextoAudio.decodeAudioData(arrayBuffer);
-        const wavBuffer = audioBufferToWav(audioBuffer);
-        const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+        const fecha = new Date();
+        const fechaFormato = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const horaFormato = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     
-        const url = URL.createObjectURL(wavBlob);
+        let contenidoFactura = `🧾 ETNODJ - FACTURA DE GRABACIÓN\n\n`;
+        contenidoFactura += `Fecha: ${fechaFormato}, ${horaFormato}\n`;
+        contenidoFactura += `Audios utilizados:\n\n`;
+    
+        let contador = 1;
+        audiosUtilizadosEnGrabacion.forEach((metadata) => {
+            const nombre = metadata.title;
+            const region = metadata.region;
+            const depto = metadata.department;
+            const autor = metadata.author;
+            contenidoFactura += `${contador}. ${nombre} - Región ${region} - ${depto} - Autor: ${autor}\n`;
+            contador++;
+        });
+    
+        contenidoFactura += `\n\nTotal: ${audiosUtilizadosEnGrabacion.size} audio(s)\n\n`;
+        contenidoFactura += `¡Gracias por usar ETNODJ!\n\n`;
+        contenidoFactura += `---------------------------------\n`;
+        contenidoFactura += `Licencia: (CC BY-NC-SA 4.0).\n`;
+        contenidoFactura += `Usted es libre de compartir y adaptar el material para fines no comerciales, siempre y cuando dé el crédito apropiado, proporcione un enlace a la licencia e indique si se han realizado cambios.`;
+    
+        const nombreArchivo = `factura_etnodj_${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}.txt`;
+        const blob = new Blob([contenidoFactura], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.style.display = 'none';
         a.href = url;
-        a.download = 'grabacion_etnodj.wav';
+        a.download = nombreArchivo;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    }
 
-        // Obtener la fecha y hora actuales
-        const ahora = new Date();
-        const fechaHora = ahora.toLocaleString('es-CO', {
-            day: '2-digit', month: '2-digit', year: 'numeric',
-            hour: '2-digit', minute: '2-digit', second: '2-digit'
-        });
-
-        // Crear y descargar el archivo de texto con los audios usados
-        const contenidoFactura = `🧾 ETNODJ - FACTURA DE GRABACIÓN
+    botonDescargar.addEventListener('click', async () => {
+        if (!grabacionBlob) return;
         
-Fecha: ${fechaHora}
-Audios utilizados:
+        // Descargar el archivo de audio en formato WAV
+        // La función audioBufferToWav es provista por la librería externa cargada en index.html
+        try {
+            const arrayBuffer = await grabacionBlob.arrayBuffer();
+            const audioBuffer = await contextoAudio.decodeAudioData(arrayBuffer);
+            const wavData = audioBufferToWav(audioBuffer);
+            const wavBlob = new Blob([wavData], { type: 'audio/wav' });
+            const urlAudio = URL.createObjectURL(wavBlob);
+            const aAudio = Object.assign(document.createElement('a'), { href: urlAudio, download: 'grabacion_etnodj.wav', style: "display:none" });
+            document.body.appendChild(aAudio).click();
+            document.body.removeChild(aAudio);
+            URL.revokeObjectURL(urlAudio);
+        } catch (error) {
+            console.error("Error al convertir la grabación a WAV:", error);
+            alert("Hubo un error al procesar el audio. La descarga no pudo completarse.");
+        }
 
-${audiosEnGrabacion.map((nombre, i) => `${i + 1}. ${nombre}`).join('\n')}
-        
-        Total: ${audiosEnGrabacion.length} audio(s)
+        // Crear y descargar la factura en formato TXT
+        crearYDescargarFactura();
 
-Gracias por usar ETNODJ!
-        `;
-
-        // Crear un Blob y un enlace para descargar el archivo de texto
-        const blobFactura = new Blob([contenidoFactura], { type: 'text/plain' });
-        const urlFactura = URL.createObjectURL(blobFactura);
-        const linkFactura = document.createElement('a');
-        linkFactura.href = urlFactura;
-        linkFactura.download = 'factura_etnodj.txt';
-        document.body.appendChild(linkFactura);
-        linkFactura.click();
-        document.body.removeChild(linkFactura);
-        URL.revokeObjectURL(urlFactura);
-
+        botonDescargar.disabled = true;
     });
 
-    // Botones de silencio y solo
-    const botonesSilencio = document.querySelectorAll('.mute');
-    const botonesSolo = document.querySelectorAll('.solo');
-
-    botonesSilencio.forEach(btn => {
+    document.querySelectorAll('.mute, .solo').forEach(btn => {
         btn.addEventListener('click', function() {
-            if (!consolaEncendida) return; // Si la consola está apagada, no hacer nada
+            if (!consolaEncendida) return;
             this.classList.toggle('activo');
-            const icono = this.querySelector('i');
-
-            if (this.classList.contains('activo')) {
-                icono.classList.remove('fa-volume-high');
-                icono.classList.add('fa-volume-xmark');
-            } else {
-                icono.classList.remove('fa-volume-xmark');
-                icono.classList.add('fa-volume-high');
+            if(this.classList.contains('mute')){
+                 const icono = this.querySelector('i');
+                 icono.classList.toggle('fa-volume-high');
+                 icono.classList.toggle('fa-volume-xmark');
             }
-            actualizarEstadoAudio();
-        });
-    });
-
-    botonesSolo.forEach(btn => {
-        btn.addEventListener('click', function() {
-            if (!consolaEncendida) return; // Si la consola está apagada, no hacer nada
-            this.classList.toggle('activo');
             actualizarEstadoAudio();
         });
     });
