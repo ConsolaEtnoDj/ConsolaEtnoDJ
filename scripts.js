@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let displayText = '';
 
             if (metadata) {
-                displayText = `${metadata.title} - Región ${metadata.region} - Departamento: ${metadata.department}.`;
+                displayText = `${metadata.title} - Región ${metadata.region} - ${metadata.department}.`;
             } else {
                 const nombreArchivoSinExtension = audioFileName.replace(/\.[^/.]+$/, "").replace(/_/g, ' ');
                 displayText = nombreArchivoSinExtension.charAt(0).toUpperCase() + nombreArchivoSinExtension.slice(1);
