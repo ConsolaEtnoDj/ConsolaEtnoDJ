@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const audiosSeleccionados = document.querySelectorAll('.selector.active');
         
-        if (audiosSeleccionados.length === 0) {
+        if (!consolaEncendida || audiosSeleccionados.length === 0) {
             const placeholder = document.createElement('div');
             placeholder.className = 'visualizador-placeholder';
             
@@ -311,6 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (consolaEncendida) {
             contextoAudio.resume();
             enPausa = false;
+            actualizarVisualizador();
         } else {
             Object.values(fuentesAudio).forEach(fuente => {
                 if (fuente.source) {
@@ -336,6 +337,23 @@ document.addEventListener('DOMContentLoaded', function() {
             audiosUtilizadosEnGrabacion.clear();
             botonGrabar.classList.remove('activo');
             botonDescargar.disabled = true;
+
+            // Limpia y muestra placeholder directamente al apagar
+            while (visualizador.firstChild) {
+                visualizador.removeChild(visualizador.firstChild);
+            }
+            const placeholder = document.createElement('div');
+            placeholder.className = 'visualizador-placeholder';
+            const img = document.createElement('img');
+            img.src = 'Imagenes/etno-dj.png';
+            img.alt = 'Visualizador EtnoDJ';
+            img.style.maxWidth = '80%';
+            img.style.maxHeight = '80%';
+            img.style.borderRadius = '12px';
+            img.style.margin = 'auto';
+            img.style.opacity = '0.5';
+            placeholder.appendChild(img);
+            visualizador.appendChild(placeholder);
         }
         botonDetener.querySelector('i').className = `fa-solid ${consolaEncendida && !enPausa ? 'fa-pause' : 'fa-play'}`;
         actualizarBotonesDeAudios();
