@@ -39,7 +39,7 @@ body {
 }
 
 .consola {
-    width: 85%; /* Ancho ajustado a 85% */
+    width: 100%; /* Ancho ajustado a 85% */
     max-width: 1500px;
     height: 90vh;
     min-height: 650px;
@@ -56,14 +56,6 @@ body {
 
 .controles-superiores {
     width: 100%;
-    /* Se ajusta la altura para que sea el 50% de la altura disponible dentro de consola,
-       considerando el padding de consola y el gap entre las dos secciones principales.
-       Altura total de consola = 90vh.
-       Padding total de consola (top+bottom) = 40px.
-       Gap entre secciones = 20px.
-       La altura de controles-superiores se calcula para que sea el 50% de la altura de la consola,
-       ajustando por la mitad del gap vertical de la consola.
-    */
     height: calc(45vh - 10px); /* 50% de la altura de la consola (90vh/2 = 45vh) menos la mitad del gap de consola */
     display: flex;
     flex-direction: row;
