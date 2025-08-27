@@ -1,71 +1,36 @@
-<<<<<<< Updated upstream
-,Archivo en Cosola 3.0,,,,,,,,,
-Nombre Archivo,Titulo,categoria,Region,Departamento,Autor / Archivo,Duracion,Musicalidad,BPM Original,Tonalidad,Archivo Sonoro
-A_trescientos.mp3,A trescientos,Personas,Andina,Cundinamarca,Propio,5 seg,Adorno,90,,A_trescientos.mp3
-Arengas_Paro_Nacional.mp3,Arengas Paro Nacional,Personas,Andina,Cundinamarca,Propio,11 seg,Adorno,144,,Arengas_Paro_Nacional.mp3
-"Buzo,_gorra,_mallas.mp3","Buzos, gorras, mallas",Personas,Andina,Cundinamarca,Propio,3 seg,Adorno,120,,"Buzo,_gorra,_mallas.mp3"
-Canto_Maguaré.mp3,Canto Maguaré,Tradiciones Indígenas,Orinoquía,Meta,Propio,9 seg,Armonía,74,,Canto_Maguaré.mp3
-Musica_pueblo_Arhuaco.mp3,Musica pueblo Arhuaco,Tradiciones Indígenas,Caribe,Magdalena,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",12 seg,Melodía,98,,Musica_pueblo_Arhuaco.mp3
-Panochas.mp3,Panochas,Personas,Caribe,Sur de Bolívar,Propio,21 seg,Adorno,NA,,panochas.mp3
-Marimba_currulao_2.mp3,Marimba Currulao 2,Música,Pacífico,Valle,Propio,2 seg,Ritmo,90,,Marimba_currulao_2.mp3
-Canto_a_Yoi.mp3,Canto a Yoi,Tradiciones Indígenas,Amazonía,Amazonas,Propio,14 seg,Melodía,90,,Canto_a_Yoi.mp3
-Gallo_bankiva.mp3,Gallo bankiva,Naturaleza,Amazonía,Amazonas,"Colección de Sonidos Ambientales-Instituto Humboldt, Colombia",3 min 8 seg,Adorno,NA,,Gallo_bankiva.mp3
-Cacerolazo.mp3,Cacerolazo,Personas,Andina,Cundinamarca,La Redada,15 seg,Ritmo,111,,Cacerolazo.mp3
-Secar_cacao.mp3,Secar cacao,Actividades,Pacífico,Cauca,Propio,2 seg,Ritmo,90,,Secar_cacao.mp3
-Peque_peque.mp3,Peque Peque,Transporte,Amazonía,Amazonas,Propio,7 seg,Fondo,NA,,Peque_peque.mp3
-Por_nuestros_muertos.mp3,"Por nuestros muertos, ni un minuto de silencio",Personas,Andina,Cundinamarca,Propio,13 seg,Adorno,NA,,Por_nuestros_muertos.mp3
-Aves_del_PNN_Sanquianga.mp3,Aves del PPN Sanquianga,Naturaleza,Pacífico,Nariño,PNN,29 seg,Fondo,NA / 80 algunas aves,,Aves_del_PNN_Sanquianga.mp3
-Llovizna_en_la_selva.mp3,Llovizna en la selva,Naturaleza,Amazonía,Amazonas,Propio,19 seg,Fondo,NA,,Llovizna_en_la_selva.mp3
-Gol_del_junior.mp3,Gol del Junior,Personas,Andina,Cundinamarca,Propio,25 seg,Fondo,NA,,Gol_del_Junior.mp3
-Río_Loretoyacu.mp3,Río Loretoyacu,Naturaleza,Amazonía,Amazonas,Propio,7 seg,Fondo,NA,,rio-loretoyacu.mp3
-Y_yo_voy_meneando_mijo.mp3,Y yo voy meneando mijo,Personas,Caribe,Sur de Bolívar,Propio,2 seg,Adorno,NA,,Y_yo_voy_meneando_mijo.mp3
-Trapiche_de_Caña_de_Azúcar.mp3,Trapiche de Caña de Azúcar,Actividades,Pacífico,Valle,Propio,31 seg,Fondo,NA,,Trapiche_de_Caña_de_Azúcar.mp3
-Prestame_el_Rompope.mp3,Prestame el Rompope,"Personas, Naturaleza",Pacífico,Valle del Cauca,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",2 min 10 seg,Adorno,NA,,Prestame_el_Rompope.mp3
-Arpa.mp3,Arpa,Música,Orinoquía,Casanare,Propio,7 seg,Adorno,92,,Arpa_2.mp3
-Me_falta_mi_gente.mp3,Me falta mi gente,Personas,Pacífico,Valle del Cauca,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",12 seg,Melodía,NA,,Me_falta_mi_gente.mp3
-Guitarra_Bambuco.mp3,Guitarra Bambuco,Música,Andina,Cundinamarca,Propio,9 seg,Armonía,105,,
-Criolle_Paradise.mp3,Criolle Paradise,Personas,Insular,Santa Catalina,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",21 seg,Fondo,NA,,
-Criolle_Message.mp3,Criolle Message,Personas,Insular,Santa Catalina,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",8 seg,Adorno,NA,,
-Bullerengue_Llorando.mp3,Bullerengue Llorando,Personas,Caribe,,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",9 seg,Adorno,83,,
-Canto_Sikuani.mp3,Canto Sikuani,Tradiciones Indígenas,Orinoquía,Meta,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",,Adorno,NA,,
-Criolle_My_Music.mp3,Criolle My Music,Personas,Insular,Santa Catalina,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",13 seg,Adorno,NA,,
-Agua_dos_quebradas.mp3,Agua Dos Quebradas,Naturaleza,Orinoquía,Meta,Propio,42 seg,Fondo,NA,,Agua_dos_quebradas.mp3
-Ritmo_de_Porro_en_alegre.mp3,Ritmo de Porro en alegre,Música,Caribe,Bolívar,Propio,6 seg,Ritmo,75,,porro-tambor-alegre.mp3
-=======
-,Archivo en Cosola 3.0,,,,,,,,,,,,,,,,,,,,
-Nombre Archivo,Titulo,Categoria,Region,Departamento,Autor / Archivo,Duracion,Musicalidad,BPM Original,Archivo Sonoro,,,,,,,,,,,,
-A_trescientos.mp3,A trescientos,Personas,Andina,Cundinamarca,EtnoDJ,5 seg,Adorno,90,A_trescientos.mp3,,,,,,,,,,,,
-Agua_dos_quebradas.mp3,Agua Dos Quebradas,Naturaleza,Orinoquía,Meta,EtnoDJ,42 seg,Fondo,NA,Agua_dos_quebradas.mp3,,,,,,,,,,,,
-Arengas_Paro_Nacional.mp3,Arengas Paro Nacional,Personas,Andina,Cundinamarca,EtnoDJ,11 seg,Adorno,144,Arengas_Paro_Nacional.mp3,,,,,,,,,,,,
-Arpa.mp3,Arpa,Música,Orinoquía,Casanare,EtnoDJ,7 seg,Melodía,92,Arpa.mp3,,,,,,,,,,,,
-Aves_del_PNN_Sanquianga.mp3,Aves del PPN Sanquianga,Naturaleza,Andina,Nariño,PNN,29 seg,Fondo,NA / 80 algunas aves,Aves_del_PNN_Sanquianga.mp3,,,,,,,,,,,,
-Bullerengue_Llorando.mp3,Bullerengue Llorando,Personas,Caribe,Atlántico,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",9 seg,Adorno,83,Bullerengue_Llorando.mp3,,,,,,,,,,,,
-"Buzo,_gorra,_mallas.mp3","Buzos, gorras, mallas",Personas,Andina,Cundinamarca,EtnoDJ,3 seg,Adorno,120,"Buzo,_gorra,_mallas.mp3",,,,,,,,,,,,
-Cacerolazo.mp3,Cacerolazo,Personas,Andina,Cundinamarca,La Redada,15 seg,Ritmo,111,Cacerolazo.mp3,,,,,,,,,,,,
-Cancion_Archipielago.mp3,Cancion Archipielago,Música,Insular,"Archipiélago de San Andrés, Providencia y Santa Catalina","Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",20 seg,Melodía,95,Cancion_Archipielago.mp3,,,,,,,,,,,,
-Canto_a_Yoi.mp3,Canto a Yoi,Tradiciones Indígenas,Amazonía,Amazonas,EtnoDJ,14 seg,Melodía,90,Canto_a_Yoi.mp3,,,,,,,,,,,,
-Canto_Maguaré.mp3,Canto Maguaré,Tradiciones Indígenas,Orinoquía,Meta,EtnoDJ,9 seg,Armonía,74,Canto_Maguaré.mp3,,,,,,,,,,,,
-Canto_Sikuani.mp3,Canto Sikuani,Tradiciones Indígenas,Orinoquía,Meta,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",7 seg,Adorno,NA,Canto_Sikuani.mp3,,,,,,,,,,,,
-Creole_Message.mp3,Creole Message,Personas,Insular,"Archipiélago de San Andrés, Providencia y Santa Catalina","Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",8 seg,Adorno,NA,Creole_Message.mp3,,,,,,,,,,,,
-Creole_My_Music.mp3,Creole My Music,Personas,Insular,"Archipiélago de San Andrés, Providencia y Santa Catalina","Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",13 seg,Adorno,NA,Creole_Message.mp3,,,,,,,,,,,,
-Creole_Paradise.mp3,Creole Paradise,Personas,Insular,"Archipiélago de San Andrés, Providencia y Santa Catalina","Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",21 seg,Fondo,NA,Creole_Paradise.mp3,,,,,,,,,,,,
-Gallo_Bankiva.mp3,Gallo Bankiva,Naturaleza,Amazonía,Amazonas,"Colección de Sonidos Ambientales-Instituto Humboldt, Colombia",3 min 8 seg,Adorno,NA,Gallo_bankiva.mp3,,,,,,,,,,,,
-Gol_del_Junior.mp3,Gol del Junior,Personas,Andina,Cundinamarca,EtnoDJ,25 seg,Fondo,NA,Gol_del_Junior.mp3,,,,,,,,,,,,
-Guitarra_Bambuco.mp3,Guitarra Bambuco,Música,Andina,Cundinamarca,EtnoDJ,9 seg,Armonía,105,Guitarra_Bambuco.mp3,,,,,,,,,,,,
-Llovizna_en_la_selva.mp3,Llovizna en la selva,Naturaleza,Amazonía,Amazonas,EtnoDJ,19 seg,Fondo,NA,Llovizna_en_la_selva.mp3,,,,,,,,,,,,
-Mar_Palomino.mp3,Mar Palomino,Naturaleza,Caribe,Guajira,EtnoDJ,19 seg,Fondo,NA,Mar_Palomino.mp3,,,,,,,,,,,,
-Marimba_Currulao.mp3,Marimba Currulao,Música,Pacífico,Valle del Cauca,EtnoDJ,3 seg,Ritmo,90,Marimba_Currulao.mp3,,,,,,,,,,,,
-Mazamorra.mp3,Mazamorra,Personas,Andina,Cundinamarca,EtnoDJ,7 seg,Adorno,NA,Mazamorra.mp3,,,,,,,,,,,,
-Me_falta_mi_gente.mp3,Me falta mi gente,Personas,Pacífico,Valle del Cauca,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",12 seg,Melodía,NA,Me_falta_mi_gente.mp3,,,,,,,,,,,,
-Musica_Insular.mp3,Música Insular ,Música,Insular,"Archipiélago de San Andrés, Providencia y Santa Catalina","Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",20 seg,Fondo,NA,Musica_Insular.mp3,,,,,,,,,,,,
-Musica_pueblo_Arhuaco.mp3,Música pueblo Arhuaco,Tradiciones Indígenas,Caribe,Magdalena,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",12 seg,Ritmo,98,Musica_pueblo_Arhuaco.mp3,,,,,,,,,,,,
-Panochas.mp3,Panochas,Personas,Caribe,Sur de Bolívar,EtnoDJ,21 seg,Adorno,NA,panochas.mp3,,,,,,,,,,,,
-Peque_peque.mp3,Peque Peque,Transporte,Amazonía,Amazonas,EtnoDJ,7 seg,Fondo,NA,Peque_peque.mp3,,,,,,,,,,,,
-Por_nuestros_muertos.mp3,"Por nuestros muertos, ni un minuto de silencio",Personas,Andina,Cundinamarca,EtnoDJ,13 seg,Adorno,NA,Por_nuestros_muertos.mp3,,,,,,,,,,,,
-Prestame_el_Rompope.mp3,Prestame el Rompope,Personas,Pacífico,Valle del Cauca,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",2 min 10 seg,Adorno,NA,Prestame_el_Rompope.mp3,,,,,,,,,,,,
-Ritmo_de_Porro_en_Alegre.mp3,Ritmo de Porro en Alegre,Música,Caribe,Bolívar,EtnoDJ,6 seg,Ritmo,75,porro-tambor-alegre.mp3,,,,,,,,,,,,
-Secar_Cacao.mp3,Secar Cacao,Actividades,Pacífico,Cauca,EtnoDJ,2 seg,Adorno,90,Secar_cacao.mp3,,,,,,,,,,,,
-Trapiche_de_Caña_de_Azúcar.mp3,Trapiche de Caña de Azúcar,Actividades,Pacífico,Valle del Cauca,EtnoDJ,31 seg,Fondo,NA,Trapiche_de_Caña_de_Azúcar.mp3,,,,,,,,,,,,
-Vas_a_la_plaza.mp3,Vas a la Plaza,Personas,Andina,Cundinamarca,EtnoDJ,3 seg,Adorno,NA,Vas_a_la_Plaza.mp3,,,,,,,,,,,,
-Y_yo_voy_meneando_mijo.mp3,Y yo voy meneando mijo,Personas,Caribe,Sur de Bolívar,EtnoDJ,2 seg,Adorno,NA,Y_yo_voy_meneando_mijo.mp3,,,,,,,,,,,,
->>>>>>> Stashed changes
+,Archivo en Cosola 3.0,,,,,,,,
+Nombre Archivo,Titulo,Categoria,Region,Departamento,Autor / Archivo,Duracion,Musicalidad,BPM Original,Archivo Sonoro
+A_trescientos.mp3,A trescientos,Personas,Andina,Cundinamarca,EtnoDJ,5 seg,Adorno,90,A_trescientos.mp3
+Agua_dos_quebradas.mp3,Agua Dos Quebradas,Naturaleza,Orinoquía,Meta,EtnoDJ,42 seg,Fondo,NA,Agua_dos_quebradas.mp3
+Arengas_Paro_Nacional.mp3,Arengas Paro Nacional,Personas,Andina,Cundinamarca,EtnoDJ,11 seg,Adorno,144,Arengas_Paro_Nacional.mp3
+Arpa.mp3,Arpa,Música,Orinoquía,Casanare,EtnoDJ,7 seg,Melodía,92,Arpa.mp3
+Aves_del_PNN_Sanquianga.mp3,Aves del PPN Sanquianga,Naturaleza,Andina,Nariño,PNN,29 seg,Fondo,NA / 80 algunas aves,Aves_del_PNN_Sanquianga.mp3
+Bullerengue_Llorando.mp3,Bullerengue Llorando,Personas,Caribe,Atlántico,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",9 seg,Adorno,83,Bullerengue_Llorando.mp3
+"Buzo,_gorra,_mallas.mp3","Buzos, gorras, mallas",Personas,Andina,Cundinamarca,EtnoDJ,3 seg,Adorno,120,"Buzo,_gorra,_mallas.mp3"
+Cacerolazo.mp3,Cacerolazo,Personas,Andina,Cundinamarca,La Redada,15 seg,Ritmo,111,Cacerolazo.mp3
+Cancion_Archipielago.mp3,Cancion Archipielago,Música,Insular,"Archipiélago de San Andrés, Providencia y Santa Catalina","Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",20 seg,Melodía,95,Cancion_Archipielago.mp3
+Canto_a_Yoi.mp3,Canto a Yoi,Tradiciones Indígenas,Amazonía,Amazonas,EtnoDJ,14 seg,Melodía,90,Canto_a_Yoi.mp3
+Canto_Maguaré.mp3,Canto Maguaré,Tradiciones Indígenas,Orinoquía,Meta,EtnoDJ,9 seg,Armonía,74,Canto_Maguaré.mp3
+Canto_Sikuani.mp3,Canto Sikuani,Tradiciones Indígenas,Orinoquía,Meta,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",7 seg,Adorno,NA,Canto_Sikuani.mp3
+Creole_Message.mp3,Creole Message,Personas,Insular,"Archipiélago de San Andrés, Providencia y Santa Catalina","Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",8 seg,Adorno,NA,Creole_Message.mp3
+Creole_My_Music.mp3,Creole My Music,Personas,Insular,"Archipiélago de San Andrés, Providencia y Santa Catalina","Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",13 seg,Adorno,NA,Creole_Message.mp3
+Creole_Paradise.mp3,Creole Paradise,Personas,Insular,"Archipiélago de San Andrés, Providencia y Santa Catalina","Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",21 seg,Fondo,NA,Creole_Paradise.mp3
+Gallo_Bankiva.mp3,Gallo Bankiva,Naturaleza,Amazonía,Amazonas,"Colección de Sonidos Ambientales-Instituto Humboldt, Colombia",3 min 8 seg,Adorno,NA,Gallo_bankiva.mp3
+Gol_del_Junior.mp3,Gol del Junior,Personas,Andina,Cundinamarca,EtnoDJ,25 seg,Fondo,NA,Gol_del_Junior.mp3
+Guitarra_Bambuco.mp3,Guitarra Bambuco,Música,Andina,Cundinamarca,EtnoDJ,9 seg,Armonía,105,Guitarra_Bambuco.mp3
+Llovizna_en_la_selva.mp3,Llovizna en la selva,Naturaleza,Amazonía,Amazonas,EtnoDJ,19 seg,Fondo,NA,Llovizna_en_la_selva.mp3
+Mar_Palomino.mp3,Mar Palomino,Naturaleza,Caribe,Guajira,EtnoDJ,19 seg,Fondo,NA,Mar_Palomino.mp3
+Marimba_Currulao.mp3,Marimba Currulao,Música,Pacífico,Valle del Cauca,EtnoDJ,3 seg,Ritmo,90,Marimba_Currulao.mp3
+Mazamorra.mp3,Mazamorra,Personas,Andina,Cundinamarca,EtnoDJ,7 seg,Adorno,NA,Mazamorra.mp3
+Me_falta_mi_gente.mp3,Me falta mi gente,Personas,Pacífico,Valle del Cauca,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",12 seg,Melodía,NA,Me_falta_mi_gente.mp3
+Musica_Insular.mp3,Música Insular ,Música,Insular,"Archipiélago de San Andrés, Providencia y Santa Catalina","Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",20 seg,Fondo,NA,Musica_Insular.mp3
+Musica_pueblo_Arhuaco.mp3,Música pueblo Arhuaco,Tradiciones Indígenas,Caribe,Magdalena,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",12 seg,Ritmo,98,Musica_pueblo_Arhuaco.mp3
+Panochas.mp3,Panochas,Personas,Caribe,Sur de Bolívar,EtnoDJ,21 seg,Adorno,NA,panochas.mp3
+Peque_peque.mp3,Peque Peque,Transporte,Amazonía,Amazonas,EtnoDJ,7 seg,Fondo,NA,Peque_peque.mp3
+Por_nuestros_muertos.mp3,"Por nuestros muertos, ni un minuto de silencio",Personas,Andina,Cundinamarca,EtnoDJ,13 seg,Adorno,NA,Por_nuestros_muertos.mp3
+Prestame_el_Rompope.mp3,Prestame el Rompope,Personas,Pacífico,Valle del Cauca,"Comisión para el Esclarecimiento de la Verdad, la Convivencia y la No Repetición - CEV-",2 min 10 seg,Adorno,NA,Prestame_el_Rompope.mp3
+Ritmo_de_Porro_en_Alegre.mp3,Ritmo de Porro en Alegre,Música,Caribe,Bolívar,EtnoDJ,6 seg,Ritmo,75,porro-tambor-alegre.mp3
+Secar_Cacao.mp3,Secar Cacao,Actividades,Pacífico,Cauca,EtnoDJ,2 seg,Adorno,90,Secar_cacao.mp3
+Trapiche_de_Caña_de_Azúcar.mp3,Trapiche de Caña de Azúcar,Actividades,Pacífico,Valle del Cauca,EtnoDJ,31 seg,Fondo,NA,Trapiche_de_Caña_de_Azúcar.mp3
+Vas_a_la_Plaza.mp3,Vas a la Plaza,Personas,Andina,Cundinamarca,EtnoDJ,3 seg,Adorno,NA,Vas_a_la_Plaza.mp3
+Y_yo_voy_meneando_mijo.mp3,Y yo voy meneando mijo,Personas,Caribe,Sur de Bolívar,EtnoDJ,2 seg,Adorno,NA,Y_yo_voy_meneando_mijo.mp3
