@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const section = button.dataset.section;
             if (!section) return;
             const seccionId = section.replace('volumen-', '');
-            const debeSonar = seccionDebeSonar(sectionId);
+            const debeSonar = seccionDebeSonar(seccionId);
             button.classList.toggle('sonando', button.classList.contains('active') && debeSonar && !enPausa);
         });
     }
