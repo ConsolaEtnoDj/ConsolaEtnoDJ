@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         botonesAudio.forEach(button => {
             const section = button.dataset.section;
             if (!section) return;
-            const seccionId = section.replace('volumen-', '');
+            const sectionId = section.replace('volumen-', '');
             const debeSonar = seccionDebeSonar(sectionId);
             button.classList.toggle('sonando', button.classList.contains('active') && debeSonar && !enPausa);
         });
