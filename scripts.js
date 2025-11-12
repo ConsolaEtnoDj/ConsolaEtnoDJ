@@ -4,22 +4,42 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(tooltip);
 
     const botonesAudio = document.querySelectorAll('.selector');
-    const contextoAudio = new (window.AudioContext || window.webkitAudioContext)();
-    const masterGainNode = contextoAudio.createGain();
-    masterGainNode.connect(contextoAudio.destination);
-    
     const visualizador = document.querySelector('.visualizador');
 
-    const fuentesAudio = {};
-    const volumenesOriginales = {};
     let consolaEncendida = false;
     let enPausa = false;
 
     // Objeto para almacenar la información de los audios del CSV
     const audioMetadata = {};
 
-    // Mapa para almacenar los audios únicos utilizados durante la grabación para la factura
-    let audiosUtilizadosEnGrabacion = new Map();
+    // --- INICIO: Lógica MIDI para TouchDesigner ---
+    let midiOutput = null;
+    // ¡IMPORTANTE! Revisa que este nombre sea exacto.
+    const nombrePuertoVirtual = "Driver IAC Bus 1"; 
+
+    async function setupMidi() {
+        try {
+            const midiAccess = await navigator.requestMIDIAccess();
+            console.log("Acceso MIDI obtenido.");
+
+            for (let output of midiAccess.outputs.values()) {
+                if (output.name.includes(nombrePuertoVirtual)) {
+                    midiOutput = output;
+                    console.log(`Puerto MIDI encontrado y conectado: ${output.name}`);
+                    break;
+                }
+            }
+
+            if (!midiOutput) {
+                console.warn(`ADVERTENCIA: No se pudo encontrar el puerto MIDI con el nombre: "${nombrePuertoVirtual}". Asegúrate de que loopMIDI (Windows) o IAC Driver (Mac) estén activos y con el nombre correcto.`);
+            }
+
+        } catch (error) {
+            console.error("No se pudo acceder a los dispositivos MIDI.", error);
+        }
+    }
+    // --- FIN: Lógica MIDI para TouchDesigner ---
+
 
     // --- INICIO: Carga y parseo del CSV ---
     async function parseCSV(url) {
@@ -74,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Metadatos de audio cargados:', audioMetadata);
         inicializarBotonesAudio();
         actualizarVisualizador(); 
+        setupMidi(); // Llamar a setupMidi DESPUÉS de cargar el CSV
     }).catch(error => {
         console.error('Error al cargar o parsear el CSV:', error);
     });
@@ -85,9 +106,45 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.deslizador-vertical-js').forEach(container => {
         const id = container.id;
         new DeslizadorVertical(container, { id: id, value: 50 });
-        volumenesOriginales[id] = 0.5;
     });
     // --- FIN: Inicialización de componentes ---
+    
+    // --- INICIO: Mapa de Notas MIDI ---
+    // Objeto para mapear IDs de botones a notas MIDI
+    const midiNoteMap = {
+        // Notas 1-59: Selectores de Audio (34) - Se asignan dinámicamente
+        // Notas 60-69: Controles Globales
+        'encender': 60,
+        'detener': 61,
+        // 'grabar': 62, // Sin asignar por ahora
+        // 'descargar': 63, // Sin asignar por ahora
+        
+        // Notas 70-79: Botones de "Solo"
+        'solo-armonia': 70,
+        'solo-melodia': 71,
+        'solo-ritmo': 72,
+        'solo-fondo': 73,
+        'solo-adornos': 74,
+        
+        // Notas 80-89: Botones de "Mute"
+        'mute-armonia': 80,
+        'mute-melodia': 81,
+        'mute-ritmo': 82,
+        'mute-fondo': 83,
+        'mute-adornos': 84
+    };
+
+    // Objeto para mapear IDs de deslizadores a Controladores MIDI (CC)
+    const midiCCMap = {
+        'volumen': 7,          // Volumen General (CC 7 es estándar)
+        'volumen-armonia': 10,
+        'volumen-melodia': 11,
+        'volumen-ritmo': 12,
+        'volumen-fondo': 13,
+        'volumen-adornos': 14
+    };
+    // --- FIN: Mapa de Notas MIDI ---
+
 
     function actualizarVisualizador() {
         while (visualizador.firstChild) {
@@ -145,26 +202,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function cargarAudio(url) {
-        if (!url) return Promise.resolve(null);
-        return fetch(url)
-            .then(response => {
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                return response.arrayBuffer();
-            })
-            .then(buffer => contextoAudio.decodeAudioData(buffer))
-            .catch(e => console.error(`Error al cargar audio: ${url}`, e));
-    }
-
-    function reproducirAudio(audioBuffer) {
-        const source = contextoAudio.createBufferSource();
-        source.buffer = audioBuffer;
-        source.loop = true;
-        const gainNode = contextoAudio.createGain();
-        source.connect(gainNode).connect(masterGainNode);
-        source.start();
-        return { source, gainNode };
-    }
 
     function seccionDebeSonar(sectionId) {
         const muteBtn = document.getElementById(`mute-${sectionId}`);
@@ -188,11 +225,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function inicializarBotonesAudio() {
-        botonesAudio.forEach((button) => {
+        // Asignar una nota MIDI única a cada botón
+        botonesAudio.forEach((button, index) => {
             button.dataset.active = 'false';
             const audioUrl = button.getAttribute('data-audio');
             const sectionId = button.closest('.fila').dataset.section;
             button.setAttribute('data-section', sectionId);
+
+            // Asignar Nota MIDI (empezando desde 1)
+            const midiNote = index + 1; // De 1 a 34
+            button.setAttribute('data-midi-note', midiNote);
             
             if (audioUrl) {
                 const audioFileName = audioUrl.split('/').pop().normalize('NFC');
@@ -219,89 +261,60 @@ document.addEventListener('DOMContentLoaded', function() {
                 tooltip.classList.remove('visible');
             });
 
-            cargarAudio(audioUrl).then(audioBuffer => {
-                if (!audioBuffer) return;
-                fuentesAudio[button.id] = { buffer: audioBuffer, source: null, gainNode: null };
+            // --- LÓGICA DE AUDIO WEB ELIMINADA ---
+            // Ya no se carga audio aquí
+                
+            button.addEventListener('click', function() {
+                if (!consolaEncendida) return;
+                this.classList.toggle('active');
+                actualizarVisualizador();
+                
+                const isActive = this.classList.contains('active');
 
-                button.addEventListener('click', function() {
-                    if (!consolaEncendida) return;
-                    this.classList.toggle('active');
-                    actualizarVisualizador();
-                    
-                    const isActive = this.classList.contains('active');
+                // --- INICIO: Enviar MIDI para este botón ---
+                const midiNote = parseInt(this.getAttribute('data-midi-note'), 10);
+                if (midiOutput && midiNote > 0) {
                     if (isActive) {
-                        const { source, gainNode } = reproducirAudio(fuentesAudio[this.id].buffer);
-                        fuentesAudio[this.id] = { ...fuentesAudio[this.id], source, gainNode };
-                        const seccionId = this.dataset.section.replace('volumen-', '');
-                        const volumenOriginal = volumenesOriginales[this.dataset.section] ?? 0.5;
-                        const debeSonar = seccionDebeSonar(seccionId);
-                        gainNode.gain.setValueAtTime(debeSonar && !enPausa ? volumenOriginal : 0, contextoAudio.currentTime);
-                        
-                        if (grabando) {
-                            const audioFileName = this.getAttribute('data-audio').split('/').pop().normalize('NFC');
-                            const metadata = audioMetadata[audioFileName];
-                            if (metadata) {
-                                audiosUtilizadosEnGrabacion.set(audioFileName, metadata);
-                            }
-                        }
-
+                        // Note On: 144, Nota, Velocidad
+                        midiOutput.send([144, midiNote, 127]);
                     } else {
-                        if (fuentesAudio[this.id].source) {
-                            fuentesAudio[this.id].source.stop();
-                            fuentesAudio[this.id].source = null;
-                            fuentesAudio[this.id].gainNode = null;
-                        }
+                        // Note Off: 128, Nota, Velocidad (0)
+                        midiOutput.send([128, midiNote, 0]);
                     }
-                    actualizarBotonesDeAudios();
-                });
+                }
+                // --- FIN: Enviar MIDI para este botón ---
+
+                // --- LÓGICA DE AUDIO WEB ELIMINADA ---
+                
+                actualizarBotonesDeAudios();
             });
         });
         actualizarVisualizador();
     }
     
+    // --- Listener de Deslizadores (MIDI CC) ---
     document.addEventListener('valuechange', (event) => {
         const { id, value } = event.detail;
-        const gainValue = value / 100;
-        if (!isFinite(gainValue)) return;
-
-        if (id === 'volumen') {
-            masterGainNode.gain.setValueAtTime(gainValue, contextoAudio.currentTime);
-        } else if (id.startsWith('volumen-')) {
-            volumenesOriginales[id] = gainValue;
-            Object.keys(fuentesAudio).forEach(key => {
-                const btn = document.getElementById(key);
-                if (!btn || btn.dataset.section !== id) return; 
-                
-                const fuente = fuentesAudio[key];
-                if (fuente.gainNode) {
-                    const seccionId = id.replace('volumen-', '');
-                    const debeSonar = seccionDebeSonar(seccionId);
-                    if (!enPausa) {
-                        fuente.gainNode.gain.setValueAtTime(debeSonar ? gainValue : 0, contextoAudio.currentTime);
-                    }
-                }
-            });
+        
+        // Mapear el ID del deslizador a su número de CC
+        const cc = midiCCMap[id];
+        
+        if (midiOutput && cc !== undefined) {
+            // Convertir valor (0-100) a MIDI (0-127)
+            const midiValue = Math.round(value * 1.27);
+            // Enviar mensaje de Control Change: [176, CC, Valor]
+            midiOutput.send([176, cc, midiValue]);
+            // console.log(`MIDI CC Enviado: ID=${id}, CC=${cc}, Valor=${midiValue}`);
         }
     });
 
     function actualizarEstadoAudio() {
-        Object.keys(fuentesAudio).forEach(key => {
-            const fuente = fuentesAudio[key];
-            const btn = document.getElementById(key);
-            if(fuente.gainNode && btn){
-                 const seccionId = btn.dataset.section.replace('volumen-', '');
-                 const debeSonar = seccionDebeSonar(seccionId);
-                 const gainValue = volumenesOriginales[btn.dataset.section] ?? 0.5;
-                 if(!enPausa){
-                    fuente.gainNode.gain.setValueAtTime(debeSonar ? gainValue : 0, contextoAudio.currentTime);
-                 }
-            }
-        });
+        // --- LÓGICA DE AUDIO WEB ELIMINADA ---
         actualizarBotonesDeAudios();
     }
 
     const botonEncender = document.getElementById('encender');
-    const botonDetener = document.getElementById('detener');
+    const botonDetener = document.getElementById('detener'); // Botón Pausa/Play
     const botonGrabar = document.getElementById('grabar');
     const botonDescargar = document.getElementById('descargar');
 
@@ -309,22 +322,74 @@ document.addEventListener('DOMContentLoaded', function() {
         consolaEncendida = !consolaEncendida;
         this.classList.toggle('activo');
         if (consolaEncendida) {
-            contextoAudio.resume();
+            // contextoAudio.resume(); // Eliminado
             enPausa = false;
             actualizarVisualizador();
+
+            // --- Enviar MIDI Encendido ---
+            if (midiOutput) {
+                const midiNote = midiNoteMap['encender']; // 60
+                // Nota 60 ON
+                midiOutput.send([144, midiNote, 127]);
+                console.log("Mensaje MIDI 'Encendido' (Nota 60) enviado a TD.");
+            }
+
         } else {
-            Object.values(fuentesAudio).forEach(fuente => {
-                if (fuente.source) {
-                    fuente.source.stop();
-                    fuente.source = null;
-                }
-            });
+            // --- INICIO: LÓGICA DE APAGADO ---
+
+            // 1. --- LÓGICA DE AUDIO WEB ELIMINADA ---
+
+            // 2. --- CORRECCIÓN DE ORDEN: ENVIAR MIDI ANTES DE LIMPIAR UI ---
+            if (midiOutput) {
+                // Nota 60 OFF (Apagado)
+                midiOutput.send([128, midiNoteMap['encender'], 0]); 
+                console.log("Mensaje MIDI 'Apagado' (Nota 60) enviado a TD.");
+                
+                // Nota 61 OFF (Pausa OFF) - Sincronizar estado
+                midiOutput.send([128, midiNoteMap['detener'], 0]);
+                console.log("Mensaje MIDI 'Pausa OFF' (Nota 61) enviado a TD.");
+
+                // --- INICIO: CORRECCIÓN DE SINCRONIZACIÓN ---
+                // Buscar todos los botones de audio que estén activos
+                document.querySelectorAll('.selector.active').forEach(botonActivo => {
+                    const midiNote = parseInt(botonActivo.getAttribute('data-midi-note'), 10);
+                    if (midiNote > 0) {
+                        // Enviar su mensaje "Note Off"
+                        midiOutput.send([128, midiNote, 0]);
+                    }
+                });
+                console.log("Mensajes MIDI 'Audio OFF' enviados para todos los canales activos.");
+                
+                // Apagar todos los Mute/Solo activos
+                document.querySelectorAll('.mute.activo, .solo.activo').forEach(botonControl => {
+                    const midiNote = midiNoteMap[botonControl.id];
+                    if (midiNote) {
+                        midiOutput.send([128, midiNote, 0]);
+                    }
+                });
+                console.log("Mensajes MIDI 'Mute/Solo OFF' enviados.");
+                // --- FIN: CORRECCIÓN DE SINCRONIZACIÓN ---
+            }
+            // --- FIN: CORRECCIÓN DE ORDEN ---
+
+
+            // 3. Limpiar UI (Botones, sliders, etc.)
              document.querySelectorAll('.selector, .mute, .solo').forEach(b => b.classList.remove('active', 'sonando', 'activo'));
+             
+             // --- ¡INICIO DE LA CORRECCIÓN! ---
+             // Resetear los iconos de Mute a su estado inicial ("sonando")
+             document.querySelectorAll('.mute i').forEach(icono => {
+                icono.classList.remove('fa-volume-xmark');
+                icono.classList.add('fa-volume-high');
+             });
+             // --- FIN DE LA CORRECCIÓN ---
              
              document.querySelectorAll('.deslizador-vertical-js').forEach(container => {
                 if (container.__deslizadorVertical__) {
                     container.__deslizadorVertical__.valor = 50;
                     container.__deslizadorVertical__.dibujar();
+                    // --- AÑADIDO: Enviar MIDI CC de reseteo ---
+                    container.__deslizadorVertical__.emitirCambioValor();
                 }
              });
              const volGeneral = document.getElementById('volumen').__deslizadorCircular__;
@@ -334,11 +399,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 volGeneral.emitirCambioValor();
              }
             grabando = false;
-            audiosUtilizadosEnGrabacion.clear();
+            // audiosUtilizadosEnGrabacion.clear(); // Eliminado
             botonGrabar.classList.remove('activo');
             botonDescargar.disabled = true;
 
-            // Limpia y muestra placeholder directamente al apagar
+            // 4. Limpiar visualizador
             while (visualizador.firstChild) {
                 visualizador.removeChild(visualizador.firstChild);
             }
@@ -355,6 +420,8 @@ document.addEventListener('DOMContentLoaded', function() {
             placeholder.appendChild(img);
             visualizador.appendChild(placeholder);
         }
+
+        // 5. Actualizar UI de botones
         botonDetener.querySelector('i').className = `fa-solid ${consolaEncendida && !enPausa ? 'fa-pause' : 'fa-play'}`;
         actualizarBotonesDeAudios();
         actualizarVisualizador();
@@ -363,124 +430,54 @@ document.addEventListener('DOMContentLoaded', function() {
     botonDetener.addEventListener('click', () => {
         if (!consolaEncendida) return;
         enPausa = !enPausa;
-        Object.values(fuentesAudio).forEach(fuente => {
-            if (fuente.gainNode) {
-                const btn = Object.keys(fuentesAudio).find(key => fuentesAudio[key] === fuente);
-                const seccionId = document.getElementById(btn).dataset.section.replace('volumen-', '');
-                const debeSonar = seccionDebeSonar(seccionId);
-                const gainValue = volumenesOriginales[document.getElementById(btn).dataset.section] ?? 0.5;
-                fuente.gainNode.gain.setValueAtTime(enPausa || !debeSonar ? 0 : gainValue, contextoAudio.currentTime);
+
+        // --- Enviar MIDI Pausa/Reanudar ---
+        if (midiOutput) {
+            const midiNote = midiNoteMap['detener']; // 61
+            if (enPausa) {
+                // Nota 61 ON (Pausa)
+                midiOutput.send([144, midiNote, 127]);
+                console.log("Mensaje MIDI 'Pausa ON' (Nota 61) enviado a TD.");
+            } else {
+                // Nota 61 OFF (Reanudar)
+                midiOutput.send([128, midiNote, 0]);
+                console.log("Mensaje MIDI 'Pausa OFF' (Nota 61) enviado a TD.");
             }
-        });
+        }
+        // --- FIN: Enviar MIDI Pausa/Reanudar ---
+
+
+        // --- LÓGICA DE AUDIO WEB ELIMINADA ---
+        
         botonDetener.querySelector('i').className = `fa-solid ${enPausa ? 'fa-play' : 'fa-pause'}`;
         actualizarBotonesDeAudios();
     });
 
-    let mediaRecorder, grabando = false, chunks = [], grabacionBlob = null;
-    const mediaStreamDestinoGlobal = contextoAudio.createMediaStreamDestination();
-
-    botonGrabar.addEventListener('click', () => {
-        if (!consolaEncendida) return;
-        grabando = !grabando;
-        botonGrabar.classList.toggle('activo', grabando);
-        if (grabando) {
-            chunks = [];
-            audiosUtilizadosEnGrabacion.clear();
-
-            document.querySelectorAll('.selector.active').forEach(button => {
-                const audioFileName = button.getAttribute('data-audio').split('/').pop().normalize('NFC');
-                const metadata = audioMetadata[audioFileName];
-                if (metadata) {
-                    audiosUtilizadosEnGrabacion.set(audioFileName, metadata);
-                }
-            });
-
-            masterGainNode.connect(mediaStreamDestinoGlobal);
-            mediaRecorder = new MediaRecorder(mediaStreamDestinoGlobal.stream);
-            mediaRecorder.ondataavailable = e => chunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                grabacionBlob = new Blob(chunks, { type: 'audio/webm' });
-                botonDescargar.disabled = false;
-                masterGainNode.disconnect(mediaStreamDestinoGlobal);
-            };
-            mediaRecorder.start();
-        } else {
-            mediaRecorder.stop();
-        }
-    });
-
-    function crearYDescargarFactura() {
-        if (audiosUtilizadosEnGrabacion.size === 0) {
-            console.log("No se utilizaron audios en la grabación. No se genera factura.");
-            return;
-        }
     
-        const fecha = new Date();
-        const fechaFormato = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        const horaFormato = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    
-        let contenidoFactura = `🧾 ETNODJ - FACTURA DE GRABACIÓN\n\n`;
-        contenidoFactura += `Fecha: ${fechaFormato}, ${horaFormato}\n`;
-        contenidoFactura += `Audios utilizados:\n\n`;
-    
-        let contador = 1;
-        audiosUtilizadosEnGrabacion.forEach((metadata) => {
-            const nombre = metadata.title;
-            const region = metadata.region;
-            const depto = metadata.department;
-            const autor = metadata.author;
-            contenidoFactura += `${contador}. ${nombre} - Región ${region} - ${depto} - Autor: ${autor}\n`;
-            contador++;
-        });
-    
-        contenidoFactura += `\n\nTotal: ${audiosUtilizadosEnGrabacion.size} audio(s)\n\n`;
-        contenidoFactura += `¡Gracias por usar ETNODJ!\n\n`;
-        contenidoFactura += `---------------------------------\n`;
-        contenidoFactura += `Licencia: (CC BY-NC-SA 4.0).\n`;
-        contenidoFactura += `Usted es libre de compartir y adaptar el material para fines no comerciales, siempre y cuando dé el crédito apropiado, proporcione un enlace a la licencia e indique si se han realizado cambios.`;
-    
-        const nombreArchivo = `factura_etnodj_${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}.txt`;
-        const blob = new Blob([contenidoFactura], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = nombreArchivo;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
+    // --- LÓGICA DE GRABACIÓN ELIMINADA ---
+    // (botonGrabar, botonDescargar, mediaRecorder, etc.)
+    // Los botones siguen existiendo en el HTML, pero no tienen funcionalidad de audio.
 
-    botonDescargar.addEventListener('click', async () => {
-        if (!grabacionBlob) return;
-        
-        // Descargar el archivo de audio en formato WAV
-        // La función audioBufferToWav es provista por la librería externa cargada en index.html
-        try {
-            const arrayBuffer = await grabacionBlob.arrayBuffer();
-            const audioBuffer = await contextoAudio.decodeAudioData(arrayBuffer);
-            const wavData = audioBufferToWav(audioBuffer);
-            const wavBlob = new Blob([wavData], { type: 'audio/wav' });
-            const urlAudio = URL.createObjectURL(wavBlob);
-            const aAudio = Object.assign(document.createElement('a'), { href: urlAudio, download: 'grabacion_etnodj.wav', style: "display:none" });
-            document.body.appendChild(aAudio).click();
-            document.body.removeChild(aAudio);
-            URL.revokeObjectURL(urlAudio);
-        } catch (error) {
-            console.error("Error al convertir la grabación a WAV:", error);
-            alert("Hubo un error al procesar el audio. La descarga no pudo completarse.");
-        }
 
-        // Crear y descargar la factura en formato TXT
-        crearYDescargarFactura();
-
-        botonDescargar.disabled = true;
-    });
-
+    // --- Listener para Mute/Solo ---
     document.querySelectorAll('.mute, .solo').forEach(btn => {
         btn.addEventListener('click', function() {
             if (!consolaEncendida) return;
             this.classList.toggle('activo');
+            
+            // --- Enviar MIDI para Mute/Solo ---
+            const midiNote = midiNoteMap[this.id];
+            if (midiOutput && midiNote) {
+                if (this.classList.contains('activo')) {
+                    midiOutput.send([144, midiNote, 127]); // Note ON
+                    // console.log(`MIDI ON: ${this.id} (Nota ${midiNote})`);
+                } else {
+                    midiOutput.send([128, midiNote, 0]); // Note OFF
+                    // console.log(`MIDI OFF: ${this.id} (Nota ${midiNote})`);
+                }
+            }
+            // --- FIN: Enviar MIDI Mute/Solo ---
+
             if(this.classList.contains('mute')){
                  const icono = this.querySelector('i');
                  icono.classList.toggle('fa-volume-high');
