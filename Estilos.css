@@ -356,7 +356,7 @@ body {
 }
 
 .mute.activo, .solo.activo {
-    background-color: rgba(var(--color-seccion-rgb), 0.5);
+    background-color: rgba(var(--color-seccion-rgb), 1);
     color: white;
     border-color: transparent;
 }
