@@ -2,16 +2,16 @@
     --color-seccion:  black;
     --color-seccion-rgb: 0, 0, 0;
     --color-seccion-clara: grey;
-    --armonia-color: #EA8244;
-    --armonia-color-rgb: 234, 130, 68;
-    --melodia-color: #F9C924;
-    --melodia-color-rgb: 249, 201, 36;
-    --ritmo-color: #E46653;
-    --ritmo-color-rgb: 228, 102, 83;
-    --fondo-color: #1F6272;
-    --fondo-color-rgb: 31, 98, 114;
-    --adornos-color: #6CA353;
-    --adornos-color-rgb: 108, 163, 83;
+    --armonia-color: #E46653;
+    --armonia-color-rgb: 228, 102, 83;
+    --melodia-color: #EFA154;
+    --melodia-color-rgb: 239, 161, 84;
+    --ritmo-color: #6CA353;
+    --ritmo-color-rgb: 108, 163, 83;
+    --fondo-color: #67ACCF;
+    --fondo-color-rgb: 103, 172, 207;
+    --adornos-color: #9250CC;
+    --adornos-color-rgb: 146, 80, 204;
     --consola-borde: #666666;
     --consola-fondo: #F3F3F3;
     --control-panel-borde: #666666;
@@ -22,7 +22,7 @@
     box-sizing: border-box;
 }
 
-#armonia {--color-seccion: var(--armonia-color); --color-seccion-clara: #FFBA91; --color-seccion-rgb: var(--armonia-color-rgb); }
+#armonia {--color-seccion: var(--armonia-color); --color-seccion-clara: #E46653; --color-seccion-rgb: var(--armonia-color-rgb); }
 #melodia {--color-seccion: var(--melodia-color); --color-seccion-clara: #FFE690; --color-seccion-rgb: var(--melodia-color-rgb); }
 #ritmo {--color-seccion: var(--ritmo-color); --color-seccion-clara: #FF9F90; --color-seccion-rgb: var(--ritmo-color-rgb); }
 #fondo {--color-seccion: var(--fondo-color); --color-seccion-clara: #3D96AC; --color-seccion-rgb: var(--fondo-color-rgb); }
@@ -128,6 +128,7 @@ body {
     padding: clamp(5px, 0.8vw, 10px);
     flex-direction: column;
     align-items: center;
+    background-color: rgba(var(--color-seccion-rgb), 0.10);
     border: 3px solid var(--color-seccion);
     border-radius: 12px;
     text-align: center;
@@ -223,9 +224,9 @@ body {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: rgba(var(--color-seccion-rgb), 0.15);
+    background-color: rgba(var(--color-seccion-rgb), 0.35);
     border: 2px solid var(--color-seccion);
-    border-radius: 6px;
+    border-radius: 3px;
     box-sizing: border-box;
 }
 
