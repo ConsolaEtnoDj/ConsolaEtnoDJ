@@ -90,13 +90,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- FIN: Inicialización de componentes ---
 
     function actualizarVisualizador() {
-        while (visualizador.firstChild) {
-            visualizador.removeChild(visualizador.firstChild);
-        }
-
+        // 1. Verificar estado de la consola y selección
         const audiosSeleccionados = document.querySelectorAll('.selector.active');
         
+        // --- CASO 1: CONSOLA APAGADA O SIN AUDIOS ---
         if (!consolaEncendida || audiosSeleccionados.length === 0) {
+            if (visualizador.querySelector('.visualizador-placeholder')) return;
+    
+            visualizador.innerHTML = '';
+            
             const placeholder = document.createElement('div');
             placeholder.className = 'visualizador-placeholder';
             
@@ -107,44 +109,178 @@ document.addEventListener('DOMContentLoaded', function() {
             img.style.maxHeight = '80%';
             img.style.borderRadius = '12px';
             img.style.margin = 'auto';
-            img.style.opacity = '0.5';
+            img.style.opacity = '1';
+            
             placeholder.appendChild(img);
             visualizador.appendChild(placeholder);
             return;
         }
-
+    
+        // --- CASO 2: HAY AUDIOS REPRODUCIÉNDOSE ---
+        
+        // Si hay un placeholder (imagen), lo quitamos
+        const placeholder = visualizador.querySelector('.visualizador-placeholder');
+        if (placeholder) {
+            visualizador.removeChild(placeholder);
+        }
+    
+        // --- NUEVO: INSERTAR TÍTULO CON ESTILOS PERSONALIZADOS ---
+        // Verificamos si ya existe el título para no duplicarlo
+        let titulo = visualizador.querySelector('.visualizador-titulo');
+        if (!titulo) {
+            titulo = document.createElement('h3');
+            titulo.className = 'visualizador-titulo';
+            titulo.textContent = 'Audios activos';
+            
+            // Estilos solicitados específicamente
+            titulo.style.fontSize = 'clamp(0.7rem, 1.2vw, 1.1rem)';
+            titulo.style.fontWeight = 'bold';
+            titulo.style.margin = '0';
+            titulo.style.marginBottom = '5px';
+            titulo.style.wordBreak = 'break-word';
+            
+            // Estilos base para alineación (necesarios para que se vea bien centrado)
+            titulo.style.width = '100%';
+            titulo.style.textAlign = 'center';
+            titulo.style.color = 'black'; 
+            
+            // Lo insertamos al principio de la lista
+            visualizador.prepend(titulo);
+        }
+        // -----------------------------
+    
+        // Identificamos qué audios deberían estar
+        const audiosActivosSet = new Set();
+        audiosSeleccionados.forEach(btn => audiosActivosSet.add(btn.getAttribute('data-audio')));
+    
+        // 1. LIMPIEZA: Eliminar items que ya no están activos
+        const itemsExistentes = Array.from(visualizador.querySelectorAll('.visualizador-item'));
+        itemsExistentes.forEach(item => {
+            if (!item.dataset.audioSrc || !audiosActivosSet.has(item.dataset.audioSrc)) {
+                // Verificamos si el item está dentro de un contenedor máscara para borrar el padre completo
+                if (item.parentElement.classList.contains('visualizador-item-container')) {
+                    item.parentElement.remove();
+                } else {
+                    item.remove();
+                }
+            }
+        });
+    
+        // 2. CREACIÓN / ACTUALIZACIÓN
         const categorias = ['armonia', 'melodia', 'ritmo', 'fondo', 'adornos'];
+    
         audiosSeleccionados.forEach(boton => {
-            const audioFileName = boton.getAttribute('data-audio').split('/').pop().normalize('NFC');
+            const audioSrc = boton.getAttribute('data-audio');
+            
+            // Buscar si ya existe este item en el DOM
+            let item = visualizador.querySelector(`.visualizador-item[data-audio-src="${audioSrc}"]`);
+    
+            // Preparar texto
+            const audioFileName = audioSrc.split('/').pop().normalize('NFC');
             const metadata = audioMetadata[audioFileName];
             let displayText = '';
-
+    
             if (metadata) {
-                displayText = `${metadata.title} - Región ${metadata.region} - ${metadata.department}.`;
+                displayText = `${metadata.title} - Región ${metadata.region} - ${metadata.department}`;
             } else {
                 const nombreArchivoSinExtension = audioFileName.replace(/\.[^/.]+$/, "").replace(/_/g, ' ');
                 displayText = nombreArchivoSinExtension.charAt(0).toUpperCase() + nombreArchivoSinExtension.slice(1);
             }
-
-            const itemAudio = document.createElement('div');
-            itemAudio.className = 'visualizador-item';
-            itemAudio.textContent = displayText;
-            
-            let categoriaEncontrada = '';
-            for (const cat of categorias) {
-                if (boton.classList.contains(cat)) {
-                    categoriaEncontrada = cat;
-                    break;
+    
+            // Si no existe, lo creamos (inicialmente SIN contenedor extra)
+            if (!item) {
+                item = document.createElement('div');
+                item.className = 'visualizador-item';
+                item.dataset.audioSrc = audioSrc;
+                item.textContent = displayText;
+    
+                // Estilos base
+                item.style.display = 'block'; 
+                item.style.marginBottom = '5px'; 
+                item.style.whiteSpace = 'nowrap'; 
+                item.style.width = 'fit-content'; 
+    
+                // Color por categoría
+                for (const cat of categorias) {
+                    if (boton.classList.contains(cat)) {
+                        item.classList.add(cat);
+                        break;
+                    }
                 }
+                visualizador.appendChild(item);
+            } 
+            
+            // 3. MEDICIÓN INTELIGENTE
+            const clone = item.cloneNode(true);
+            clone.style.display = 'inline-block';
+            clone.style.position = 'absolute';
+            clone.style.visibility = 'hidden';
+            clone.style.width = 'auto'; 
+            clone.classList.remove('desplazando'); 
+            clone.style.paddingLeft = '5px'; 
+            
+            document.body.appendChild(clone);
+            const anchoTexto = clone.offsetWidth;
+            // Medimos el ancho disponible del visualizador (restando un poco de padding de seguridad)
+            // Usamos el visualizador como referencia base si no tiene contenedor aún
+            let anchoDisponible = visualizador.clientWidth - 10; 
+            // Si ya tiene contenedor, usamos el ancho del contenedor padre
+            if (item.parentElement.classList.contains('visualizador-item-container')) {
+                anchoDisponible = item.parentElement.clientWidth;
             }
-            if (categoriaEncontrada) {
-                itemAudio.classList.add(categoriaEncontrada);
+    
+            document.body.removeChild(clone);
+    
+            // 4. APLICAR LÓGICA CONDICIONAL: ¿Necesita envoltura y animación?
+            if (anchoTexto > anchoDisponible) {
+                
+                // --- NECESITA ANIMACIÓN (TEXTO LARGO) ---
+    
+                // A. Si NO tiene contenedor aún, se lo creamos
+                if (!item.parentElement.classList.contains('visualizador-item-container')) {
+                    const container = document.createElement('div');
+                    container.className = 'visualizador-item-container';
+                    
+                    // Estilos del contenedor máscara
+                    container.style.width = '100%';
+                    container.style.overflow = 'hidden'; // Aquí ocurre la magia del recorte
+                    container.style.flexShrink = '0';
+                    container.style.borderRadius = '6px';
+                    container.style.marginLeft = '5px'; 
+    
+                    // Insertamos el contenedor donde estaba el item y movemos el item dentro
+                    item.parentElement.insertBefore(container, item);
+                    container.appendChild(item);
+                }
+    
+                // B. Activamos la animación y ajustamos estilos del item
+                if (!item.classList.contains('desplazando')) {
+                    item.classList.add('desplazando');
+                    item.style.display = 'block'; 
+                    item.style.width = 'auto'; 
+                    item.style.marginLeft = '5px'; 
+                }
+    
+            } else {
+    
+                // --- NO NECESITA ANIMACIÓN (TEXTO CORTO) ---
+    
+                // A. Si TIENE contenedor (sobra), lo quitamos ("desenvolver")
+                if (item.parentElement.classList.contains('visualizador-item-container')) {
+                    const container = item.parentElement;
+                    // Movemos el item fuera del container, justo antes del container
+                    container.parentElement.insertBefore(item, container);
+                    // Eliminamos el container vacío
+                    container.remove();
+                }
+    
+                // B. Desactivamos animación y restauramos estilos simples
+                item.classList.remove('desplazando');
+                item.style.width = 'fit-content'; 
             }
-
-            visualizador.appendChild(itemAudio);
         });
     }
-
+    
     function cargarAudio(url) {
         if (!url) return Promise.resolve(null);
         return fetch(url)
