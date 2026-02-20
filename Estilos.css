@@ -2,16 +2,16 @@
     --color-seccion:  black;
     --color-seccion-rgb: 0, 0, 0;
     --color-seccion-clara: grey;
-    --armonia-color: #E46653;
-    --armonia-color-rgb: 228, 102, 83;
-    --melodia-color: #EFA154;
-    --melodia-color-rgb: 239, 161, 84;
+    --armonia-color: #EFA154 ;
+    --armonia-color-rgb: 239, 161, 84; 
+    --melodia-color: #9250CC;
+    --melodia-color-rgb: 146, 80, 204;
     --ritmo-color: #6CA353;
     --ritmo-color-rgb: 108, 163, 83;
     --fondo-color: #67ACCF;
     --fondo-color-rgb: 103, 172, 207;
-    --adornos-color: #9250CC;
-    --adornos-color-rgb: 146, 80, 204;
+    --adornos-color: #E46653;
+    --adornos-color-rgb: 228, 102, 83; 
     --consola-borde: #666666;
     --consola-fondo: #F3F3F3;
     --control-panel-borde: #666666;
@@ -318,7 +318,7 @@ body {
     border-radius: 6px;
     font-size: clamp(0.7rem, 1vw, 0.9rem);
     color: var(--consola-borde);
-    font-weight: bold;
+    font-weight: regular;
     flex-shrink: 0;
     width: 100%;
     white-space: nowrap;
@@ -366,17 +366,14 @@ body {
 
 .selectores-audios {
     width: 100%;
-    height: calc(45vh - 10px);
+    height: 50%;
     flex: 0 1 auto; 
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    gap: clamp(4px, 0.5vh, 9px);
+    gap: clamp(6px, 0.5vh, 9px);
     padding: clamp(2px, 0.5vh, 8px);
-    border-radius: 12px;
     justify-content: flex-start;
-    border: 2px solid var(--color-seccion);
-    
 }
 
 .fila {
@@ -392,7 +389,7 @@ body {
 .selector {
     flex: 1 1 auto; 
     width: auto;
-    height: calc(8vh - 2px);
+    height: calc(7vh);
     min-width: 30px;
     border-radius: 8px;
     border: none;
