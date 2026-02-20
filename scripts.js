@@ -196,9 +196,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
                 // Estilos base
                 item.style.display = 'block'; 
-                item.style.marginBottom = '5px'; 
+                item.style.marginBottom = '2px'; 
                 item.style.whiteSpace = 'nowrap'; 
-                item.style.width = 'fit-content'; 
+                item.style.width = 'fit-content';  
     
                 // Color por categoría
                 for (const cat of categorias) {
@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
             clone.style.visibility = 'hidden';
             clone.style.width = 'auto'; 
             clone.classList.remove('desplazando'); 
-            clone.style.paddingLeft = '5px'; 
+            
             
             document.body.appendChild(clone);
             const anchoTexto = clone.offsetWidth;
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     item.classList.add('desplazando');
                     item.style.display = 'block'; 
                     item.style.width = 'auto'; 
-                    item.style.marginLeft = '5px'; 
+                    item.style.marginLeft = '-5px'; 
                 }
     
             } else {
