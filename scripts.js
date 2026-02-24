@@ -472,6 +472,7 @@ document.addEventListener('DOMContentLoaded', function() {
             grabando = false;
             audiosUtilizadosEnGrabacion.clear();
             botonGrabar.classList.remove('activo');
+            botonDetener.classList.add('desactivado');
             botonDescargar.disabled = true;
 
             // Limpia y muestra placeholder directamente al apagar
@@ -492,6 +493,13 @@ document.addEventListener('DOMContentLoaded', function() {
             visualizador.appendChild(placeholder);
         }
         botonDetener.querySelector('i').className = `fa-solid ${consolaEncendida && !enPausa ? 'fa-pause' : 'fa-play'}`;
+
+        if (botonDetener.querySelector('i').className  === 'fa-solid fa-pause' ) {
+            botonDetener.classList.add('desactivado'); // Agrega la clase para el fondo
+        } else {
+            botonDetener.classList.remove('desactivado'); // Elimina la clase si no está en pausa
+        }
+        
         actualizarBotonesDeAudios();
         actualizarVisualizador();
     });
@@ -509,6 +517,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         botonDetener.querySelector('i').className = `fa-solid ${enPausa ? 'fa-play' : 'fa-pause'}`;
+        if (botonDetener.querySelector('i').className  === 'fa-solid fa-pause' ) {
+            botonDetener.classList.add('desactivado'); // Agrega la clase para el fondo
+        } else {
+            botonDetener.classList.remove('desactivado'); // Elimina la clase si no está en pausa
+        }
         actualizarBotonesDeAudios();
     });
 
