@@ -10,49 +10,22 @@
 <body>
     <div class="consola">
         <div class="controles-superiores">
-            <div class="bloque-l">
-                <!-- Bloque izquierdo (Controles) -->
-                <div class="control-panel panel-controles">
-                    <h3 class="titulo">Controles</h3>
-                    <div class="control">
-                        <button id="encender"><i class="fa-solid fa-power-off"></i></button>
-                        <h3 class="etiqueta">Encender</h3>
-                    </div>
-                    <div class="control">
-                        <button id="detener"><i class="fa-solid fa-play"></i></button>
-                        <h3 class="etiqueta">Reproducir</h3>
-                    </div>
-                    <div class="control">
-                        <button id="grabar"><i class="fa-solid fa-circle"></i></button>
-                        <h3 class="etiqueta">Grabar</h3>
-                    </div>
-                    <div class="control">
-                        <button id="descargar" disabled><i class="fa-solid fa-download"></i></button>
-                        <h3 class="etiqueta">Descargar</h3>
-                    </div>
-                </div> 
-            
-                <!-- Columna derecha (Asistencia arriba, Volumen abajo fusionado) -->
-                <div class="columna-derecha">
-                    <div class="control-panel panel-asistencia">
-                        <h3 class="titulo">Asistencia</h3>
-                        <div class="control">
-                            <button id="ceguera-color"><i class="fa-solid fa-eye-low-vision"></i></button>
-                            <h3 class="etiqueta">Color</h3>
-                        </div>
-                        <div class="control"> 
-                            <button id="voiceover"><i class="fa-solid fa-ear-listen"></i></button>
-                            <h3 class="etiqueta">Audio</h3>
-                        </div>
-                    </div>
-                    
-                    <div class="control-panel panel-volumen">
-                        <div class="deslizador-item">
-                            <div class="deslizador-circular" id="volumen"></div>
-                            <h3 class="etiqueta">Volumen</h3>
-                        </div>
-                    </div>
+            <div class="control-panel">
+                <button id="encender"><i class="fa-solid fa-power-off"></i></button>
+                <button id="detener"><i class="fa-solid fa-play"></i></button>
+                <button id="grabar"><i class="fa-solid fa-circle"></i></button>
+                <button id="descargar" disabled><i class="fa-solid fa-download"></i></button>
+            </div> 
+            <div class="control-panel">
+                <div class="deslizador-item">
+                    <div class="deslizador-circular" id="volumen"></div>
+                    <h3 class="etiqueta">Volumen</h3>
                 </div>
+                    <div class="tempo-display">
+                    <span>120</span>
+                    <div class="tempo-circle"></div>
+                    </div>
+                <h3 class="etiqueta">Tempo</h3>
             </div>
 
             <div class="control-audios">
@@ -67,7 +40,7 @@
                     </div>
                     <div class="botones-categoria">
                         <button class="mute" id="mute-armonia"><i class="fa-solid fa-volume-high"></i></button>
-                        <button class="solo" id="solo-armonia"><i class="fa-solid fa-headphones"></i></button>
+                        <button class="solo" id="solo-armonia">S</button>
                     </div>
                 </div>
                 <!-- Categoría Melodía -->
@@ -81,7 +54,7 @@
                     </div>
                      <div class="botones-categoria">
                         <button class="mute" id="mute-melodia"><i class="fa-solid fa-volume-high"></i></button>
-                        <button class="solo" id="solo-melodia"><i class="fa-solid fa-headphones"></i></button>
+                        <button class="solo" id="solo-melodia">S</button>
                     </div>
                 </div>
                 <!-- Categoría Ritmo -->
@@ -95,7 +68,7 @@
                     </div>
                      <div class="botones-categoria">
                         <button class="mute" id="mute-ritmo"><i class="fa-solid fa-volume-high"></i></button>
-                        <button class="solo" id="solo-ritmo"><i class="fa-solid fa-headphones"></i></button>
+                        <button class="solo" id="solo-ritmo">S</button>
                     </div>
                 </div>
                 <!-- Categoría Fondo -->
@@ -109,7 +82,7 @@
                     </div>
                      <div class="botones-categoria">
                         <button class="mute" id="mute-fondo"><i class="fa-solid fa-volume-high"></i></button>
-                        <button class="solo" id="solo-fondo"><i class="fa-solid fa-headphones"></i></button>
+                        <button class="solo" id="solo-fondo">S</button>
                     </div>
                 </div>
                 <!-- Categoría Adornos -->
@@ -123,7 +96,7 @@
                     </div>
                      <div class="botones-categoria">
                         <button class="mute" id="mute-adornos"><i class="fa-solid fa-volume-high"></i></button>
-                        <button class="solo" id="solo-adornos"><i class="fa-solid fa-headphones"></i></button>
+                        <button class="solo" id="solo-adornos">S</button>
                     </div>
                 </div>
             </div>
