@@ -1,7 +1,7 @@
 :root {
-    --color-seccion:  #434343;
+    --color-seccion:  black;
     --color-seccion-rgb: 0, 0, 0;
-    --color-seccion-clara: gray;
+    --color-seccion-clara: grey;
     --armonia-color: #EFA154 ;
     --armonia-color-rgb: 239, 161, 84; 
     --melodia-color: #9250CC;
@@ -15,8 +15,7 @@
     --consola-borde: #666666;
     --consola-fondo: #F3F3F3;
     --control-panel-borde: #666666;
-    --control-activo: #cbcbcb;
-    --color-controles: #ECECEC;
+    --control-inactivo: #d9d9d9;
 }
 
 *, *::before, *::after {
@@ -71,9 +70,9 @@ body {
     display: flex;
     padding: clamp(5px, 1vw, 10px);
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
-    gap: 5px;
+    gap: 10px;
     border: 3px solid var(--control-panel-borde);
     border-radius: 12px;
     text-align: center;
@@ -116,7 +115,26 @@ body {
 .etiqueta {
     font-size: clamp(0.6rem, 1vw, 0.9rem);
     font-weight: normal;
-    margin:0;
+}
+
+.tempo-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+    font-weight: bold;
+    color: #333;
+    background-color: var(--control-inactivo);
+    padding: 5px 8px;
+    border-radius: 8px;
+}
+
+.tempo-circle {
+    width: clamp(8px, 1vw, 12px);
+    height: clamp(8px, 1vw, 12px);
+    border-radius: 50%;
+    border: 2px solid #333;
 }
 
 .control-audios {
@@ -173,7 +191,7 @@ body {
     height: 100%;
     display: flex;
     align-items: center;
-    padding: 0px;
+    padding: 5px 0;
 }
 
 .deslizador-horizontal-js {
@@ -229,13 +247,8 @@ body {
 
 #encender.activo { background-color: #9ee99e; }
 #encender.activo i { color: var(--consola-borde); }
-#detener.desactivado { background-color: var(--control-activo); }
-#grabar.activo { background-color: var(--control-activo); }
 #grabar.activo i { color: #E65252; }
 #descargar:disabled { opacity: 0.5; cursor: not-allowed; }
-#ceguera-color.activo { background-color: var(--control-activo); }
-#voiceover.activo { background-color: var(--control-activo); }
-
 #encender i { color: #E65252; }
 #descargar i, #detener i , #grabar i, #ceguera-color i, #lsc i, #voiceover i
 { color: var(--consola-borde); }
@@ -246,16 +259,14 @@ body {
     border-radius: 8px;
     border: 2px solid var(--color-seccion);
     cursor: pointer;
+    font-weight: bold;
+    font-size: clamp(10px, 1.2vw, 14px);
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: transparent;
     color: var(--color-seccion);
     transition: background-color 0.3s, color 0.3s;
-}
-
-.mute i, .solo i {
-    font-size: clamp(12px, 1.5vw, 18px);
 }
 
 .mute.activo, .solo.activo {
@@ -306,6 +317,8 @@ body {
 .visualizador-item.desplazando:hover {
     animation: desplazamiento 15s linear infinite;
 }
+
+
 
 @keyframes desplazamiento {
     0% {
