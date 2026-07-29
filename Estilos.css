@@ -93,44 +93,14 @@ body {
     flex-direction: row;
     height: 100%;
     flex: 0 0 auto;
+    gap: clamp(5px, 1vw, 10px);
 }
 
 .panel-controles {
-    background-color: var(--consola-fondo);
-    position: relative;
-    z-index: 1; /* Se mantiene al fondo para que el volumen lo superponga */
-    border-bottom-right-radius: 0; /* Quita la curva para empalmar recto con volumen */
-    margin: 0;
-    border: 3px solid var(--control-panel-borde);
     background-color: var(--color-controles);
 }
 
-.columna-derecha {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    
-}
-
 .panel-asistencia {
-    margin-left: clamp(5px, 1vw, 10px); /* Restaura el gap manual con el panel izquierdo */
-    flex: 1; /* Toma la mitad superior del espacio disponible */
-    margin-bottom: clamp(5px, 1vw, 10px); /* Gap con el volumen abajo */
-    border: 3px solid var(--control-panel-borde);
-    border-radius: 12px;
-}
-
-.panel-volumen {
-    margin-left: -3px; /* TRUCO: Se desliza 3px a la izquierda para cubrir el borde del panel izquierdo */
-    border: 3px solid var(--control-panel-borde); /* Quitamos su propio borde izquierdo */
-    border-left: 0px; /* Quitamos su propio borde izquierdo */
-    border-top-right-radius: 12px;
-    border-bottom-right-radius: 12px;
-    border-top-left-radius: 0; /* Hace la esquina interior de la L perfectamente recta */
-    border-bottom-left-radius: 0; /* Acople perfecto en la base */
-    position: relative;
-    z-index: 2; /* Se asegura de estar encima del borde derecho de controles */
-    flex: 1; /* Toma la mitad inferior del espacio disponible, alineándose perfecto abajo */
     background-color: var(--color-controles);
 }
 
@@ -151,147 +121,99 @@ body {
 
 .control-audios {
     height: 100%;
+    width: auto;
     display: flex;
+    flex-direction: column;
     gap: clamp(4px, 0.8vw, 10px);
     justify-content: flex-start;
-    flex: 0 0 auto; 
-    width: auto; 
+    /* flex-basis en 0 (no "auto"): el reparto de ancho con .visualizador se basa solo
+       en la proporción de grow, no en el contenido, para que un título largo en el
+       visualizador no le robe ancho a esta columna (ni viceversa). */
+    flex: 3 1 0;
 }
 
 .control-categoria {
-    width: auto; 
-    height: 100%;
+    width: 100%;
+    flex: 1 1 0; /* Las 5 categorías comparten por igual la altura disponible */
+    min-height: 0;
     display: flex;
-    padding: clamp(5px, 0.8vw, 10px);
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
     align-items: center;
+    padding: clamp(5px, 0.8vw, 10px) clamp(10px, 1.5vw, 18px);
     background-color: rgba(var(--color-seccion-rgb), 0.10);
     border: 3px solid var(--color-seccion);
     border-radius: 12px;
-    text-align: center;
-    flex: 0 0 auto;   /* El ancho lo definen los elementos internos (botones, sliders) */  
-    min-width: 60px;  /* Mínimo seguro para que no colapse demasiado */
-    gap: 5px;
+    text-align: left;
+    gap: clamp(8px, 1.2vw, 16px);
+}
+
+.control-categoria .titulo {
+    flex-shrink: 0;
+    min-width: clamp(55px, 7vw, 90px);
+    margin-bottom: 0;
 }
 
 .botones-categoria {
-    margin-top: auto;
     display: flex;
     flex-direction: row;
+    flex-shrink: 0;
     gap: 5px;
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
 }
 
-.deslizador-item {
-    width: 100%;
+.deslizador-item-horizontal {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    height: 100%;
+    min-width: 0;
+}
+
+.deslizador-horizontal-contenedor {
+    flex-grow: 1;
     height: 100%;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 2px;
-}
-
-.deslizador-circular {
-    width: clamp(35px, 4vw, 55px);
-    height: clamp(35px, 4vw, 55px);
-    position: relative;
-    display: block;
-}
-
-.deslizador-circular .circulo-exterior {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background-color: var(--color-seccion);
-    position: absolute;
-}
-
-.deslizador-circular .circulo-interior {
-    width: 65%;
-    height: 65%;
-    border-radius: 50%;
-    background-color: var(--color-seccion-clara);
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.deslizador-circular .indicador {
-    width: 46%;
-    height: 10%;
-    background-color: #d9d9d9;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform-origin: left center;
-    border-color: var(--color-seccion);
-    border-style: solid;
-    border-radius: 5px;
-    border-width: 1px;
-}
-
-.deslizador-item-vertical {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
-    width: 100%;
-    min-height: 0;
-}
-
-.deslizador-vertical-contenedor {
-    flex-grow: 1;
-    width: 100%;
-    display: flex;
-    justify-content: center;
     align-items: center;
     padding: 0px;
 }
 
-.deslizador-vertical-js {
+.deslizador-horizontal-js {
     position: relative;
-    width: 12px;
-    height: 100%;
+    height: 12px;
+    width: 100%;
     cursor: pointer;
 }
 
-.deslizador-vertical-js .track {
+.deslizador-horizontal-js .track {
     position: absolute;
-    width: 100%;
     height: 100%;
+    width: 100%;
     background-color: rgba(var(--color-seccion-rgb), 0.35);
     border: 2px solid var(--color-seccion);
     border-radius: 3px;
     box-sizing: border-box;
 }
 
-.deslizador-vertical-js .fill {
+.deslizador-horizontal-js .fill {
     position: absolute;
-    bottom: 0;
-    width: 100%;
+    left: 0;
+    height: 100%;
     background-color: var(--color-seccion);
     border-radius: 4px;
 }
 
-.deslizador-vertical-js .thumb {
+.deslizador-horizontal-js .thumb {
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 24px;
-    height: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 24px;
+    width: 12px;
     background-color: var(--color-seccion);
     border-radius: 4px;
     box-shadow: 0 0 4px rgba(0,0,0,0.5);
     box-sizing: border-box;
 }
 
-#encender, #detener, #grabar, #descargar, #ceguera-color, #voiceover {
+#encender, #detener, #grabar, #descargar, #ceguera-color, #lsc, #voiceover {
     width: clamp(30px, 3.5vw, 40px);
     height: clamp(30px, 3.5vw, 40px);
     border: 1px solid #7F7F7F;
@@ -299,7 +221,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 8px;
+    border-radius: 50%;
     background-color: var(transparent);
     font-size: clamp(12px, 1.5vw, 20px);
     font-weight: bold;
@@ -315,7 +237,7 @@ body {
 #voiceover.activo { background-color: var(--control-activo); }
 
 #encender i { color: #E65252; }
-#descargar i, #detener i , #grabar i, #ceguera-color i ,#voiceover i
+#descargar i, #detener i , #grabar i, #ceguera-color i, #lsc i, #voiceover i
 { color: var(--consola-borde); }
 
 .mute, .solo {
@@ -343,10 +265,13 @@ body {
 }
 
 .visualizador {
-    flex: 1 1 auto;  /* Hace que ocupe todo el espacio sobrante */
-    width: auto; 
-    min-width: 150px; 
-    height: 100%; 
+    /* flex-basis en 0 (no "auto"): igual que en .control-audios, así el ancho de esta
+       columna no depende del título del audio activo (evita que un título largo
+       agrande o encoja el panel; el recorte de texto lo maneja el overflow interno). */
+    flex: 4 1 0;
+    width: auto;
+    min-width: 150px;
+    height: 100%;
     display: flex;
     border-radius: 12px;
     border: 3px solid var(--consola-borde);

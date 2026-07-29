@@ -1,7 +1,7 @@
 /**
- * Clase para crear un componente de deslizador vertical interactivo.
+ * Clase para crear un componente de deslizador horizontal interactivo.
  */
-class DeslizadorVertical {
+class DeslizadorHorizontal {
     /**
      * @param {HTMLElement} element El elemento contenedor para el deslizador.
      * @param {object} options Opciones de configuración.
@@ -16,14 +16,14 @@ class DeslizadorVertical {
 
         this.inicializar();
         // Guardar una referencia a la instancia en el elemento DOM para acceso externo.
-        this.elemento.__deslizadorVertical__ = this;
+        this.elemento.__deslizadorHorizontal__ = this;
     }
 
     /**
      * Crea la estructura DOM del deslizador y adjunta los listeners de eventos.
      */
     inicializar() {
-        this.elemento.classList.add('deslizador-vertical-js');
+        this.elemento.classList.add('deslizador-horizontal-js');
 
         // Crear los elementos visuales del deslizador
         this.track = document.createElement('div');
@@ -90,11 +90,10 @@ class DeslizadorVertical {
     actualizarValor(event) {
         const rect = this.track.getBoundingClientRect();
         // Usar `touches` si es un evento táctil, si no, usar el evento de ratón.
-        const clientY = event.touches ? event.touches[0].clientY : event.clientY;
-        
-        let posY = clientY - rect.top;
-        // Invertir el porcentaje porque 0 está en la parte superior.
-        let porcentaje = 100 - (posY / rect.height) * 100;
+        const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+
+        let posX = clientX - rect.left;
+        let porcentaje = (posX / rect.width) * 100;
 
         // Limitar el valor entre 0 y 100.
         this.valor = Math.max(0, Math.min(100, porcentaje));
@@ -118,12 +117,12 @@ class DeslizadorVertical {
     }
 
     /**
-     * Actualiza la posición del thumb y la altura del relleno para reflejar el valor actual.
+     * Actualiza la posición del thumb y el ancho del relleno para reflejar el valor actual.
      */
     dibujar() {
         const porcentaje = this.valor;
-        this.fill.style.height = `${porcentaje}%`;
-        // La posición del thumb se calcula como un porcentaje. Restamos la mitad de su altura para centrarlo.
-        this.thumb.style.bottom = `calc(${porcentaje}% - 7.5px)`; 
+        this.fill.style.width = `${porcentaje}%`;
+        // La posición del thumb se calcula como un porcentaje. Restamos la mitad de su ancho para centrarlo.
+        this.thumb.style.left = `calc(${porcentaje}% - 6px)`;
     }
 }
