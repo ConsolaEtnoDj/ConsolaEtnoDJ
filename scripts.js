@@ -7,7 +7,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const contextoAudio = new (window.AudioContext || window.webkitAudioContext)();
     const masterGainNode = contextoAudio.createGain();
     masterGainNode.connect(contextoAudio.destination);
-    
+
+    // Puente para que el bloque de Voiceover (otro DOMContentLoaded, sin acceso a este closure)
+    // pueda atenuar la mezcla mientras habla.
+    window.consolaAudio = { contextoAudio, masterGainNode };
+
     const visualizador = document.querySelector('.visualizador');
 
     const fuentesAudio = {};
@@ -80,11 +84,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- FIN: Carga y parseo del CSV ---
 
     // --- INICIO: Inicialización de componentes ---
-    new DeslizadorCircular(document.getElementById('volumen'), { value: 50, id: 'volumen' });
-
-    document.querySelectorAll('.deslizador-vertical-js').forEach(container => {
+    document.querySelectorAll('.deslizador-horizontal-js').forEach(container => {
         const id = container.id;
-        new DeslizadorVertical(container, { id: id, value: 50 });
+        new DeslizadorHorizontal(container, { id: id, value: 50 });
         volumenesOriginales[id] = 0.5;
     });
     // --- FIN: Inicialización de componentes ---
@@ -400,9 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const gainValue = value / 100;
         if (!isFinite(gainValue)) return;
 
-        if (id === 'volumen') {
-            masterGainNode.gain.setValueAtTime(gainValue, contextoAudio.currentTime);
-        } else if (id.startsWith('volumen-')) {
+        if (id.startsWith('volumen-')) {
             volumenesOriginales[id] = gainValue;
             Object.keys(fuentesAudio).forEach(key => {
                 const btn = document.getElementById(key);
@@ -457,18 +457,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
              document.querySelectorAll('.selector, .mute, .solo').forEach(b => b.classList.remove('active', 'sonando', 'activo'));
              
-             document.querySelectorAll('.deslizador-vertical-js').forEach(container => {
-                if (container.__deslizadorVertical__) {
-                    container.__deslizadorVertical__.valor = 50;
-                    container.__deslizadorVertical__.dibujar();
+             document.querySelectorAll('.deslizador-horizontal-js').forEach(container => {
+                if (container.__deslizadorHorizontal__) {
+                    container.__deslizadorHorizontal__.valor = 50;
+                    container.__deslizadorHorizontal__.dibujar();
                 }
              });
-             const volGeneral = document.getElementById('volumen').__deslizadorCircular__;
-             if(volGeneral) {
-                volGeneral.valor = 50;
-                volGeneral.dibujar();
-                volGeneral.emitirCambioValor();
-             }
             grabando = false;
             audiosUtilizadosEnGrabacion.clear();
             botonGrabar.classList.remove('activo');
@@ -626,4 +620,242 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+});
+
+/* =========================================================================
+ * VOICEOVER (Accesibilidad)
+ * =========================================================================
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+    let voiceoverActivo = false;
+    let volumenOriginalAntesDeHablar = null;
+    const FACTOR_DUCKING = 0.15; // Fracción del volumen de la mezcla mientras habla la asistencia
+
+    const btnVoiceover = document.getElementById('voiceover');
+
+    // 1.a Selección de voz en español: confiar solo en "mensaje.lang" no siempre basta,
+    // algunos navegadores (Chrome en particular) no asocian una voz automáticamente y
+    // se quedan en silencio sin lanzar ningún error. Buscamos explícitamente una voz
+    // en español entre las disponibles y se la asignamos al mensaje.
+    let vocesDisponibles = [];
+    function actualizarVocesDisponibles() {
+        vocesDisponibles = window.speechSynthesis.getVoices();
+    }
+    actualizarVocesDisponibles();
+    if ('onvoiceschanged' in window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = actualizarVocesDisponibles;
+    }
+    function elegirVozEnEspanol() {
+        if (!vocesDisponibles.length) actualizarVocesDisponibles();
+        return vocesDisponibles.find(v => v.lang && v.lang.toLowerCase().startsWith('es')) || null;
+    }
+
+    // 1.b Bajar el volumen de la mezcla mientras habla la asistencia (para que se escuche
+    //    por encima de los audios activos) y restaurarlo al terminar.
+    function iniciarDucking() {
+        const audio = window.consolaAudio;
+        if (!audio || !audio.masterGainNode) return;
+        if (volumenOriginalAntesDeHablar === null) {
+            volumenOriginalAntesDeHablar = audio.masterGainNode.gain.value;
+        }
+        audio.masterGainNode.gain.setValueAtTime(volumenOriginalAntesDeHablar * FACTOR_DUCKING, audio.contextoAudio.currentTime);
+    }
+
+    function detenerDucking() {
+        const audio = window.consolaAudio;
+        if (!audio || !audio.masterGainNode || volumenOriginalAntesDeHablar === null) return;
+        audio.masterGainNode.gain.setValueAtTime(volumenOriginalAntesDeHablar, audio.contextoAudio.currentTime);
+        volumenOriginalAntesDeHablar = null;
+    }
+
+    // 2. Función principal para reproducir texto en voz alta
+    let generacionHabla = 0; // Descarta restauraciones de volumen de anuncios ya reemplazados
+    function hablar(texto) {
+        if (!voiceoverActivo) return;
+
+        const idHabla = ++generacionHabla;
+        // Nota: no restauramos antes de volver a atenuar. Si ya había un ducking en
+        // curso, "volumenOriginalAntesDeHablar" sigue guardando el valor real previo a
+        // cualquier atenuación; leer gain.value aquí en su lugar devolvería un valor
+        // aún no "renderizado" por el motor de audio y produciría atenuaciones acumuladas.
+        iniciarDucking();
+
+        const decirAhora = () => {
+            if (idHabla !== generacionHabla) return; // reemplazado por un anuncio más nuevo
+
+            const mensaje = new SpeechSynthesisUtterance(texto);
+            mensaje.lang = 'es-ES'; // Configurado en español
+            mensaje.rate = 1.05;    // Velocidad ligeramente dinámica
+            const voz = elegirVozEnEspanol();
+            if (voz) mensaje.voice = voz;
+
+            // Restaurar el volumen sondeando "speaking/pending" en vez de depender de
+            // onend/onerror: en Safari esos eventos no siempre se disparan. El sondeo
+            // funciona en cualquier navegador; el tope de tiempo es solo una red de
+            // seguridad por si el motor se queda marcado como "hablando" para siempre.
+            const limiteMs = Math.max(6000, texto.length * 150);
+            const inicio = Date.now();
+            const comprobarFin = () => {
+                if (idHabla !== generacionHabla) return;
+                const sigueHablando = window.speechSynthesis.speaking || window.speechSynthesis.pending;
+                if (sigueHablando && (Date.now() - inicio) < limiteMs) {
+                    setTimeout(comprobarFin, 150);
+                } else {
+                    detenerDucking();
+                }
+            };
+            mensaje.onend = comprobarFin;
+            mensaje.onerror = comprobarFin;
+
+            window.speechSynthesis.speak(mensaje);
+            setTimeout(comprobarFin, 150);
+        };
+
+        // Solo cancelamos si de verdad hay algo sonando o encolado. En Chrome, encadenar
+        // cancel() + speak() en el mismo tick -incluso cuando no había nada que cancelar-
+        // hace que la nueva utterance se descarte en silencio (bug conocido). Si sí había
+        // algo en curso, le damos un pequeño respiro tras cancelar antes de pedir la nueva voz.
+        if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+            window.speechSynthesis.cancel();
+            setTimeout(decirAhora, 50);
+        } else {
+            decirAhora();
+        }
+    }
+
+    // 3. Activar / Desactivar el Voiceover al hacer clic
+    if (btnVoiceover) {
+        btnVoiceover.addEventListener('click', (e) => {
+            e.stopPropagation(); // Evita que se active el evento de clic general
+            voiceoverActivo = !voiceoverActivo;
+            btnVoiceover.classList.toggle('activo', voiceoverActivo);
+
+            // Cambiar el estilo visual temporalmente si está activo
+            if (voiceoverActivo) {
+                btnVoiceover.style.color = 'var(--armonia-color, #EFA154)';
+                anunciarElemento(btnVoiceover);
+            } else {
+                btnVoiceover.style.color = '';
+                window.speechSynthesis.cancel(); // Silenciar inmediatamente
+                detenerDucking();
+            }
+        });
+    }
+
+    // 4. Función auxiliar para identificar a qué sección pertenece un elemento
+    function obtenerSeccion(elemento) {
+        const secciones = ['armonia', 'melodia', 'ritmo', 'fondo', 'adornos', 'master'];
+        for (let sec of secciones) {
+            if (elemento.closest('#' + sec) || elemento.closest('.' + sec) || elemento.classList.contains(sec)) {
+                // Retorna la palabra con la primera letra en mayúscula (ej. "Armonia")
+                return sec.charAt(0).toUpperCase() + sec.slice(1);
+            }
+        }
+        return 'General';
+    }
+
+    // 4.b Estado hablado de un botón: activado/desactivado, salvo casos especiales
+    function obtenerEstadoBoton(boton) {
+        if (boton.id === 'descargar') {
+            return boton.disabled ? 'deshabilitado' : 'habilitado';
+        }
+        if (boton.id === 'detener') {
+            const icono = boton.querySelector('i');
+            return icono && icono.classList.contains('fa-pause') ? 'reproduciendo' : 'en pausa';
+        }
+        return boton.classList.contains('activo') ? 'activado' : 'desactivado';
+    }
+
+    // 5. Lógica principal de lectura separada para poder reutilizarla
+    function anunciarElemento(target) {
+        if (!target) return;
+
+        let textoLeido = '';
+        const seccion = obtenerSeccion(target);
+
+        // A. Botones de Silencio (Mute)
+        if (target.classList.contains('mute')) {
+            const estado = target.classList.contains('activo') ? 'activado' : 'desactivado';
+            textoLeido = `Silencio ${seccion} ${estado}`;
+        }
+
+        // B. Botones de Solo
+        else if (target.classList.contains('solo')) {
+            const estado = target.classList.contains('activo') ? 'activado' : 'desactivado';
+            textoLeido = `Solo ${seccion} ${estado}`;
+        }
+
+        // C. Selectores de Pistas de Audio
+        else if (target.classList.contains('selector')) {
+            const estado = (target.classList.contains('active') || target.classList.contains('sonando')) ? 'activada' : 'desactivada';
+            let nombrePista = '';
+
+            // Extraer el nombre de la pista desde el atributo data-audio limpiando guiones bajos y la extensión
+            if (target.dataset.audio) {
+                nombrePista = target.dataset.audio.split('/').pop().replace('.mp3', '').replace(/_/g, ' ');
+            } else {
+                nombrePista = `Número ${target.id.replace('selector', '')}`;
+            }
+            textoLeido = `Pista ${nombrePista} de ${seccion}, ${estado}`;
+        }
+
+        // D. Deslizadores de volumen por categoría
+        else if (target.classList.contains('deslizador-horizontal-js')) {
+            const instancia = target.__deslizadorHorizontal__;
+            const valor = instancia ? Math.round(instancia.valor) : 0;
+            textoLeido = `Deslizador de volumen de ${seccion}, al ${valor} por ciento`;
+        }
+
+        // E. Controles Principales (Encender, Detener, Grabar, Descargar, Color, LSC, Audición...)
+        else if (target.tagName === 'BUTTON') {
+            const etiquetaEl = target.parentElement ? target.parentElement.querySelector('.etiqueta') : null;
+            const nombre = etiquetaEl ? etiquetaEl.textContent.trim() : target.id;
+            const estado = obtenerEstadoBoton(target);
+            textoLeido = `Botón ${nombre} ${estado}`.trim();
+        }
+
+        // Si se armó una frase válida, mandarla a leer
+        if (textoLeido) {
+            hablar(textoLeido);
+        }
+    }
+
+    // 6. Interceptar el paso del mouse: solo anunciar tras 3 segundos de permanencia (hover),
+    //    para no saturar de voz al simplemente pasar el cursor. Incluye los deslizadores
+    //    de volumen de cada categoría además de los botones.
+    const SELECTOR_ANUNCIABLE = 'button, .deslizador-horizontal-js';
+    let hoverTimer = null;
+
+    document.body.addEventListener('mouseover', (e) => {
+        if (!voiceoverActivo) return;
+        const target = e.target.closest(SELECTOR_ANUNCIABLE);
+        if (!target || (e.relatedTarget && target.contains(e.relatedTarget))) return;
+
+        clearTimeout(hoverTimer);
+        hoverTimer = setTimeout(() => anunciarElemento(target), 3000);
+    });
+
+    document.body.addEventListener('mouseout', (e) => {
+        const target = e.target.closest(SELECTOR_ANUNCIABLE);
+        if (!target || (e.relatedTarget && target.contains(e.relatedTarget))) return;
+        clearTimeout(hoverTimer);
+    });
+
+    // 7. Interceptar el CLIC para anunciar el cambio de estado de los botones (inmediato, sin espera)
+    document.body.addEventListener('click', (e) => {
+        if (!voiceoverActivo) return;
+        const target = e.target.closest('button');
+
+        if (target) {
+            // El mouse ya está sobre este botón (por eso se pudo hacer clic), así que hay
+            // un aviso por hover pendiente para el mismo elemento. Lo cancelamos para que
+            // no se repita el anuncio 3 segundos después si el cursor se queda ahí quieto.
+            clearTimeout(hoverTimer);
+            // Un pequeño retraso para permitir que las clases originales (.activo, .sonando) se actualicen primero
+            setTimeout(() => {
+                anunciarElemento(target);
+            }, 50);
+        }
+    });
 });

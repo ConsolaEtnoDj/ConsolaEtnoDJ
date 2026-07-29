@@ -10,16 +10,43 @@
 <body>
     <div class="consola">
         <div class="controles-superiores">
-            <div class="control-panel">
-                <button id="encender"><i class="fa-solid fa-power-off"></i></button>
-                <button id="detener"><i class="fa-solid fa-play"></i></button>
-                <button id="grabar"><i class="fa-solid fa-circle"></i></button>
-                <button id="descargar" disabled><i class="fa-solid fa-download"></i></button>
-            </div> 
-            <div class="control-panel">
-                <div class="deslizador-item">
-                    <div class="deslizador-circular" id="volumen"></div>
-                    <h3 class="etiqueta">Volumen</h3>
+            <div class="bloque-l">
+                <!-- Bloque izquierdo (Controles) -->
+                <div class="control-panel panel-controles">
+                    <h3 class="titulo">Controles</h3>
+                    <div class="control">
+                        <button id="encender"><i class="fa-solid fa-power-off"></i></button>
+                        <h3 class="etiqueta">Encender</h3>
+                    </div>
+                    <div class="control">
+                        <button id="detener"><i class="fa-solid fa-play"></i></button>
+                        <h3 class="etiqueta">Reproducir</h3>
+                    </div>
+                    <div class="control">
+                        <button id="grabar"><i class="fa-solid fa-circle"></i></button>
+                        <h3 class="etiqueta">Grabar</h3>
+                    </div>
+                    <div class="control">
+                        <button id="descargar" disabled><i class="fa-solid fa-download"></i></button>
+                        <h3 class="etiqueta">Descargar</h3>
+                    </div>
+                </div> 
+            
+                <!-- Bloque derecho (Asistencia) -->
+                <div class="control-panel panel-asistencia">
+                    <h3 class="titulo">Asistencia</h3>
+                    <div class="control">
+                        <button id="ceguera-color"><i class="fa-solid fa-eye-low-vision"></i></button>
+                        <h3 class="etiqueta">Color</h3>
+                    </div>
+                    <div class="control">
+                        <button id="lsc"><i class="fa-solid fa-hands-asl-interpreting"></i></button>
+                        <h3 class="etiqueta">LSC</h3>
+                    </div>
+                    <div class="control">
+                        <button id="voiceover"><i class="fa-solid fa-podcast"></i></button>
+                        <h3 class="etiqueta">Audición</h3>
+                    </div>
                 </div>
                     <div class="tempo-display">
                     <span>120</span>
@@ -32,11 +59,10 @@
                 <!-- Categoría Armonía -->
                 <div class="control-categoria" id="armonia">
                     <h2 class="titulo">Armonía</h2>
-                    <div class="deslizador-item-vertical">
-                        <div class="deslizador-vertical-contenedor">
-                            <div class="deslizador-vertical-js" id="volumen-armonia"></div>
+                    <div class="deslizador-item-horizontal">
+                        <div class="deslizador-horizontal-contenedor">
+                            <div class="deslizador-horizontal-js" id="volumen-armonia"></div>
                         </div>
-                        <h3 class="etiqueta">Volumen</h3>
                     </div>
                     <div class="botones-categoria">
                         <button class="mute" id="mute-armonia"><i class="fa-solid fa-volume-high"></i></button>
@@ -46,11 +72,10 @@
                 <!-- Categoría Melodía -->
                 <div class="control-categoria" id="melodia">
                     <h2 class="titulo">Melodía</h2>
-                    <div class="deslizador-item-vertical">
-                         <div class="deslizador-vertical-contenedor">
-                            <div class="deslizador-vertical-js" id="volumen-melodia"></div>
+                    <div class="deslizador-item-horizontal">
+                        <div class="deslizador-horizontal-contenedor">
+                            <div class="deslizador-horizontal-js" id="volumen-melodia"></div>
                         </div>
-                        <h3 class="etiqueta">Volumen</h3>
                     </div>
                      <div class="botones-categoria">
                         <button class="mute" id="mute-melodia"><i class="fa-solid fa-volume-high"></i></button>
@@ -60,11 +85,10 @@
                 <!-- Categoría Ritmo -->
                 <div class="control-categoria" id="ritmo">
                     <h2 class="titulo">Ritmo</h2>
-                    <div class="deslizador-item-vertical" >
-                        <div class="deslizador-vertical-contenedor">
-                            <div class="deslizador-vertical-js" id="volumen-ritmo"></div>
+                    <div class="deslizador-item-horizontal">
+                        <div class="deslizador-horizontal-contenedor">
+                            <div class="deslizador-horizontal-js" id="volumen-ritmo"></div>
                         </div>
-                        <h3 class="etiqueta">Volumen</h3>
                     </div>
                      <div class="botones-categoria">
                         <button class="mute" id="mute-ritmo"><i class="fa-solid fa-volume-high"></i></button>
@@ -74,11 +98,10 @@
                 <!-- Categoría Fondo -->
                 <div class="control-categoria" id="fondo">
                     <h2 class="titulo">Fondo</h2>
-                    <div class="deslizador-item-vertical">
-                        <div class="deslizador-vertical-contenedor">
-                           <div class="deslizador-vertical-js" id="volumen-fondo"></div>
+                    <div class="deslizador-item-horizontal">
+                        <div class="deslizador-horizontal-contenedor">
+                           <div class="deslizador-horizontal-js" id="volumen-fondo"></div>
                         </div>
-                        <h3 class="etiqueta">Volumen</h3>
                     </div>
                      <div class="botones-categoria">
                         <button class="mute" id="mute-fondo"><i class="fa-solid fa-volume-high"></i></button>
@@ -88,11 +111,10 @@
                 <!-- Categoría Adornos -->
                 <div class="control-categoria" id="adornos">
                     <h2 class="titulo">Adornos</h2>
-                    <div class="deslizador-item-vertical">
-                        <div class="deslizador-vertical-contenedor">
-                            <div class="deslizador-vertical-js" id="volumen-adornos"></div>
+                    <div class="deslizador-item-horizontal">
+                        <div class="deslizador-horizontal-contenedor">
+                            <div class="deslizador-horizontal-js" id="volumen-adornos"></div>
                         </div>
-                        <h3 class="etiqueta">Volumen</h3>
                     </div>
                      <div class="botones-categoria">
                         <button class="mute" id="mute-adornos"><i class="fa-solid fa-volume-high"></i></button>
@@ -153,8 +175,7 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/audiobuffer-to-wav@1.0.0/index.min.js"></script>
-    <script src="deslizador-circular.js"></script>
-    <script src="deslizador-vertical.js"></script>
+    <script src="deslizador-horizontal.js"></script>
     <script src="scripts.js"></script>
 </body>
 </html>
